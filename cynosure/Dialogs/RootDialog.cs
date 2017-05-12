@@ -41,8 +41,9 @@ namespace cynosure.Dialogs
             if (askForHelp(activity))
             {
                 String help = "My main resonsibility is to run your standup for you.\n\n";
-                help += "My commands:\n\n";
-                help += "'start standup' : Starts the standup conversation.\n";
+                help += "My commands:\n\n\n\n";
+                help += "'start standup'   : Starts the standup conversation.\n\n";
+                help += "'standup summary' : Displays a summary of the current standup reports";
                 await context.PostAsync(help);
                 return;
             }
@@ -52,12 +53,25 @@ namespace cynosure.Dialogs
                 context.Call<Standup>(new StandupDialog(), standupUpdatedAsync);
                 return;
             }
+
+            Standup _standup;
+            if (standupSummary(activity))
+            {
+                if (context.UserData.TryGetValue(@"standup", out _standup))
+                {
+                    await context.PostAsync(_standup.Summary());
+                    return;
+                }
+                else
+                {
+                    await context.PostAsync("There is no standup data right now. You can 'start standup' if you like");
+                    return;
+                }
+            }
             
             // return our reply to the user
             await context.PostAsync($"Sorry I don't know what to do when you say '{activity.Text}'");
-
             context.Wait(MessageReceivedAsync);
-
         }
 
         private async Task standupUpdatedAsync(IDialogContext context, IAwaitable<Standup> result)
@@ -77,6 +91,12 @@ namespace cynosure.Dialogs
         private bool startStandup(Activity activity)
         {
             var regex = new Regex("^start standup");
+            return regex.Match(activity.Text).Success;
+        }
+
+        private bool standupSummary(Activity activity)
+        {
+            var regex = new Regex("^standup summary");
             return regex.Match(activity.Text).Success;
         }
 

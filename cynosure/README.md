@@ -2,7 +2,7 @@
 
 Definiton of Cynosure: "one that serves to direct or guide" - https://www.merriam-webster.com/dictionary/cynosure
 
-This is a Bot that helps one to stay on focus.
+This is a Bot that helps one to stay on focus by asking you three classic "standup" questions and reminding you of them throughout the day.
 
 # Development
 
@@ -15,5 +15,5 @@ This is a Bot that helps one to stay on focus.
   5. Commit to Git
   6. Repeat
 
-
+  
 

@@ -78,15 +78,7 @@ namespace cynosure.Dialogs
 
         private void SummaryReportAsync(IDialogContext context)
         {
-            String summary = "DONE:\n\n";
-            foreach (var item in _standup.Done)
-                summary += item + "\n\n";
-            summary += "\n\n\n\nFOCUSING ON:\n\n";
-            foreach (var item in _standup.Committed)
-                summary += item + "\n\n";
-            summary += "\n\n\n\nBARRIERS:\n\n";
-            foreach (var item in _standup.Issues)
-                summary += item + "\n\n";
+            string summary = _standup.Summary();
             summary += "\n\n\n\nDo you want to post this standup summary?";
             PromptDialog.Text(context, StandupCompleteAsync, summary);
         }
@@ -96,6 +88,7 @@ namespace cynosure.Dialogs
             String input = await result;
             if (input.ToLower() == "yes")
             {
+                await context.PostAsync("Great, thanks for completing your standup report.");
                 context.Done(_standup);
             }
             else
