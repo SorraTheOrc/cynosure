@@ -5,6 +5,7 @@ using Microsoft.Bot.Connector;
 using System.Text.RegularExpressions;
 using cynosure.Model;
 using Microsoft.Bot.Builder.Scorables;
+using Microsoft.ApplicationInsights;
 
 namespace cynosure.Dialogs
 {
@@ -14,13 +15,15 @@ namespace cynosure.Dialogs
 
         UserProfile _profile;
         Standup _standup;
-
+        
         [MethodBind]
         [ScorableGroup(0)]
         private async Task ActivityHandler(IDialogContext context, IActivity activity)
         {
+            var telemetry = new TelemetryClient();
             if (context.UserData.TryGetValue(@"profile", out _profile))
             {
+                telemetry.TrackEvent("New User Profile");
                 _profile = new UserProfile();
             }
             else
@@ -34,13 +37,17 @@ namespace cynosure.Dialogs
                     try
                     {
                         this.ContinueWithNextGroup();
-                    } catch (Microsoft.Bot.Builder.Internals.Fibers.InvalidNeedException Ex)
+                    } catch (Microsoft.Bot.Builder.Internals.Fibers.InvalidNeedException ex)
                     {
+                        telemetry.TrackException(ex);
                         ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
                         Activity reply = ((Activity)activity).CreateReply("Sorry, I'm having some difficulties here. I have to reboot myself. Let's start over");
                         await connector.Conversations.ReplyToActivityAsync(reply);
                         StateClient stateClient = activity.GetStateClient();
                         await stateClient.BotState.DeleteStateForUserAsync(activity.ChannelId, activity.From.Id);
+                    } catch (Exception ex)
+                    {
+                        telemetry.TrackException(ex);
                     }
                     break;
                 case ActivityTypes.ConversationUpdate:
