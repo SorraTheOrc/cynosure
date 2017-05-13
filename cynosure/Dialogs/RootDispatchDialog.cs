@@ -31,7 +31,17 @@ namespace cynosure.Dialogs
             switch (activity.Type)
             {
                 case ActivityTypes.Message:
-                    this.ContinueWithNextGroup();
+                    try
+                    {
+                        this.ContinueWithNextGroup();
+                    } catch (Microsoft.Bot.Builder.Internals.Fibers.InvalidNeedException Ex)
+                    {
+                        ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
+                        Activity reply = ((Activity)activity).CreateReply("Sorry, I'm having some difficulties here. I have to reboot myself. Let's start over");
+                        await connector.Conversations.ReplyToActivityAsync(reply);
+                        StateClient stateClient = activity.GetStateClient();
+                        await stateClient.BotState.DeleteStateForUserAsync(activity.ChannelId, activity.From.Id);
+                    }
                     break;
                 case ActivityTypes.ConversationUpdate:
                 case ActivityTypes.ContactRelationUpdate:
@@ -70,25 +80,24 @@ namespace cynosure.Dialogs
             if (context.UserData.TryGetValue(@"standup", out _standup))
             {
                 await context.PostAsync(_standup.Summary());
-                return;
             }
             else
             {
                 await context.PostAsync("There is no standup data right now. You can 'start standup' if you like");
-                return;
             }
-        }
+            context.Done(true);
+;        }
 
         [RegexPattern("help")]
         [ScorableGroup(1)]
         public async Task Help(IDialogContext context, IActivity activity)
         {
-            await this.Default(context, activity);
+            this.Default(context, activity);
         }
 
         [MethodBind]
         [ScorableGroup(2)]
-        public async Task Default(IDialogContext context, IActivity activity)
+        public void Default(IDialogContext context, IActivity activity)
         {
             context.Call(new HelpDialog(), AfterDialog);
         }
@@ -98,6 +107,7 @@ namespace cynosure.Dialogs
         public async Task Hello(IDialogContext context, IActivity activity)
         {
             await context.PostAsync($@"Hello, {_profile.FamiliarName}, I'm Cynosure. Say 'help' to learn more about what I can do.");
+            context.Done(true);
         }
 
         private static async Task AfterDialog(IDialogContext context, IAwaitable<object> result)
