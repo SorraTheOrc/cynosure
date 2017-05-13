@@ -21,6 +21,8 @@ namespace cynosure.Dialogs
         private async Task ActivityHandler(IDialogContext context, IActivity activity)
         {
             var telemetry = new TelemetryClient();
+            telemetry.TrackEvent("Root Activity");
+            
             if (context.UserData.TryGetValue(@"profile", out _profile))
             {
                 telemetry.TrackEvent("New User Profile");
