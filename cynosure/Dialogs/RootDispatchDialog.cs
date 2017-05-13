@@ -15,6 +15,7 @@ namespace cynosure.Dialogs
 
         UserProfile _profile;
         Standup _standup;
+        [NonSerialized]
         TelemetryClient telemetry = new TelemetryClient();
 
         [MethodBind]
