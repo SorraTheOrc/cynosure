@@ -15,16 +15,16 @@ namespace cynosure.Dialogs
 
         UserProfile _profile;
         Standup _standup;
-        
+        TelemetryClient telemetry = new TelemetryClient();
+
         [MethodBind]
         [ScorableGroup(0)]
         private async Task ActivityHandler(IDialogContext context, IActivity activity)
         {
-            var telemetry = new TelemetryClient();
 
             try
             {
-                telemetry.TrackEvent("Root Activity");
+                telemetry.TrackEvent("Root Activity: " + activity.Type);
             
                 if (context.UserData.TryGetValue(@"profile", out _profile))
                 {
@@ -33,6 +33,7 @@ namespace cynosure.Dialogs
                 }
                 else
                 {
+                    telemetry.TrackEvent("Update/Verify User Profile");
                     context.Call<UserProfile>(new UpdateUserProfileDialog(), profileUpdated);
                 }
 
@@ -79,16 +80,17 @@ namespace cynosure.Dialogs
 
         [RegexPattern("start standup|standup|start")]
         [ScorableGroup(1)]
-        public async Task StartStandup(IDialogContext context, IActivity activity)
+        public void StartStandup(IDialogContext context, IActivity activity)
         {
+            telemetry.TrackEvent("Start Standup");
             context.Call<Standup>(new StandupDialog(), standupUpdatedAsync);
-            return;
         }
 
         [RegexPattern("standup summar|summary|standup report|report")]
         [ScorableGroup(1)]
         public async Task StandupSummary(IDialogContext context, IActivity activity)
         {
+            telemetry.TrackEvent("Summarize Standup");
             if (context.UserData.TryGetValue(@"standup", out _standup))
             {
                 await context.PostAsync(_standup.Summary());
@@ -111,6 +113,7 @@ namespace cynosure.Dialogs
         [ScorableGroup(2)]
         public void Default(IDialogContext context, IActivity activity)
         {
+            telemetry.TrackEvent("Display Help");
             context.Call(new HelpDialog(), AfterDialog);
         }
 
@@ -118,6 +121,7 @@ namespace cynosure.Dialogs
         [ScorableGroup(1)]
         public async Task Hello(IDialogContext context, IActivity activity)
         {
+            telemetry.TrackEvent("Say Hi");
             await context.PostAsync($@"Hello, {_profile.FamiliarName}, I'm Cynosure. Say 'help' to learn more about what I can do.");
             context.Done(true);
         }
