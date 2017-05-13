@@ -21,44 +21,47 @@ namespace cynosure.Dialogs
         private async Task ActivityHandler(IDialogContext context, IActivity activity)
         {
             var telemetry = new TelemetryClient();
-            telemetry.TrackEvent("Root Activity");
-            
-            if (context.UserData.TryGetValue(@"profile", out _profile))
-            {
-                telemetry.TrackEvent("New User Profile");
-                _profile = new UserProfile();
-            }
-            else
-            {
-                context.Call<UserProfile>(new UpdateUserProfileDialog(), profileUpdated);
-            }
 
-            switch (activity.Type)
+            try
             {
-                case ActivityTypes.Message:
-                    try
-                    {
+                telemetry.TrackEvent("Root Activity");
+            
+                if (context.UserData.TryGetValue(@"profile", out _profile))
+                {
+                    telemetry.TrackEvent("New User Profile");
+                    _profile = new UserProfile();
+                }
+                else
+                {
+                    context.Call<UserProfile>(new UpdateUserProfileDialog(), profileUpdated);
+                }
+
+                switch (activity.Type)
+                {
+                    case ActivityTypes.Message:
                         this.ContinueWithNextGroup();
-                    } catch (Microsoft.Bot.Builder.Internals.Fibers.InvalidNeedException ex)
-                    {
-                        telemetry.TrackException(ex);
-                        ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
-                        Activity reply = ((Activity)activity).CreateReply("Sorry, I'm having some difficulties here. I have to reboot myself. Let's start over");
-                        await connector.Conversations.ReplyToActivityAsync(reply);
-                        StateClient stateClient = activity.GetStateClient();
-                        await stateClient.BotState.DeleteStateForUserAsync(activity.ChannelId, activity.From.Id);
-                    } catch (Exception ex)
-                    {
-                        telemetry.TrackException(ex);
-                    }
-                    break;
-                case ActivityTypes.ConversationUpdate:
-                case ActivityTypes.ContactRelationUpdate:
-                case ActivityTypes.Typing:
-                case ActivityTypes.DeleteUserData:
-                case ActivityTypes.Ping:
-                default:
-                    break;
+                        break;
+                    case ActivityTypes.ConversationUpdate:
+                    case ActivityTypes.ContactRelationUpdate:
+                    case ActivityTypes.Typing:
+                    case ActivityTypes.DeleteUserData:
+                    case ActivityTypes.Ping:
+                    default:
+                        break;
+                }
+            }
+            catch (Microsoft.Bot.Builder.Internals.Fibers.InvalidNeedException ex)
+            {
+                telemetry.TrackException(ex);
+                ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
+                Activity reply = ((Activity)activity).CreateReply("Sorry, I'm having some difficulties here. I have to reboot myself. Let's start over");
+                await connector.Conversations.ReplyToActivityAsync(reply);
+                StateClient stateClient = activity.GetStateClient();
+                await stateClient.BotState.DeleteStateForUserAsync(activity.ChannelId, activity.From.Id);
+            }
+            catch (Exception ex)
+            {
+                telemetry.TrackException(ex);
             }
         }
 
