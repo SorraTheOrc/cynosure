@@ -13,28 +13,14 @@ namespace cynosure.Dialogs
     public class RootDispatchDialog : DispatchDialog
     {
 
-        UserProfile _profile;
         Standup _standup;
-        [NonSerialized]
-        TelemetryClient telemetry = new TelemetryClient();
 
         [MethodBind]
         [ScorableGroup(0)]
         private async Task ActivityHandler(IDialogContext context, IActivity activity)
-        {
+        { 
             try
             {
-                if (context.UserData.TryGetValue(@"profile", out _profile))
-                {
-                    telemetry.TrackEvent("New User Profile");
-                    _profile = new UserProfile();
-                }
-                else
-                {
-                    telemetry.TrackEvent("Update/Verify User Profile");
-                    context.Call<UserProfile>(new UpdateUserProfileDialog(), profileUpdated);
-                }
-
                 switch (activity.Type)
                 {
                     case ActivityTypes.Message:
@@ -51,16 +37,13 @@ namespace cynosure.Dialogs
             }
             catch (Microsoft.Bot.Builder.Internals.Fibers.InvalidNeedException ex)
             {
+                var telemetry = new TelemetryClient();
                 telemetry.TrackException(ex);
                 ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
                 Activity reply = ((Activity)activity).CreateReply("Sorry, I'm having some difficulties here. I have to reboot myself. Let's start over");
                 await connector.Conversations.ReplyToActivityAsync(reply);
                 StateClient stateClient = activity.GetStateClient();
                 await stateClient.BotState.DeleteStateForUserAsync(activity.ChannelId, activity.From.Id);
-            }
-            catch (Exception ex)
-            {
-                telemetry.TrackException(ex);
             }
         }
 
@@ -80,6 +63,7 @@ namespace cynosure.Dialogs
         [ScorableGroup(1)]
         public void StartStandup(IDialogContext context, IActivity activity)
         {
+            var telemetry = new TelemetryClient();
             telemetry.TrackEvent("Start Standup");
             context.Call<Standup>(new StandupDialog(), standupUpdatedAsync);
         }
@@ -88,6 +72,7 @@ namespace cynosure.Dialogs
         [ScorableGroup(1)]
         public async Task StandupSummary(IDialogContext context, IActivity activity)
         {
+            var telemetry = new TelemetryClient();
             telemetry.TrackEvent("Summarize Standup");
             if (context.UserData.TryGetValue(@"standup", out _standup))
             {
@@ -105,13 +90,13 @@ namespace cynosure.Dialogs
         public async Task Help(IDialogContext context, IActivity activity)
         {
             await this.DefaultAsync(context, activity);
-            context.Done(true);
         }
 
         [MethodBind]
         [ScorableGroup(2)]
         public async Task DefaultAsync(IDialogContext context, IActivity activity)
         {
+            var telemetry = new TelemetryClient();
             try
             {
                 telemetry.TrackEvent("Display Help");
@@ -121,14 +106,11 @@ namespace cynosure.Dialogs
             {
                 telemetry.TrackException(ex);
                 ConnectorClient connector = new ConnectorClient(new Uri(activity.ServiceUrl));
-                Activity reply = ((Activity)activity).CreateReply("Sorry, I'm having some difficulties here. I have to reboot myself. Let's start over");
+                Activity reply = ((Activity)activity).CreateReply("Sorry, I'm having some difficulties here. I have to reboot myself. Let's start over.");
                 await connector.Conversations.ReplyToActivityAsync(reply);
                 StateClient stateClient = activity.GetStateClient();
                 await stateClient.BotState.DeleteStateForUserAsync(activity.ChannelId, activity.From.Id);
-            }
-            catch (Exception ex)
-            {
-                telemetry.TrackException(ex);
+                telemetry.TrackEvent("Cleared users state.");
             }
         }
 
@@ -136,8 +118,9 @@ namespace cynosure.Dialogs
         [ScorableGroup(1)]
         public async Task Hello(IDialogContext context, IActivity activity)
         {
+            var telemetry = new TelemetryClient();
             telemetry.TrackEvent("Say Hi");
-            await context.PostAsync($@"Hello, {_profile.FamiliarName}, I'm Cynosure. Say 'help' to learn more about what I can do.");
+            await context.PostAsync(@"Hello, I'm Cynosure. Say 'help' to learn more about what I can do.");
             context.Done(true);
         }
 
