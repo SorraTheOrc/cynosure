@@ -13,87 +13,144 @@ namespace cynosure.Dialogs
     {
         public Task StartAsync(IDialogContext context)
         {
-            EnsureStandupReportCompleted(context);
+            EnterDone(context);
             return Task.CompletedTask;
         }
 
         Standup _standup;
-        private void EnsureStandupReportCompleted(IDialogContext context)
+        private void EnterDone(IDialogContext context)
         {
             if (!context.UserData.TryGetValue(@"profile", out _standup))
             {
                 _standup = new Standup();
             }
 
-            PromptDialog.Text(context, DoneItemEnteredAsync, "What did you complete in the last cycle?");
+            var text = "What did you complete in the last cycle?";
+            var promptOptions = new PromptOptions<string>(
+                text,
+                speak: text
+                );
+
+            var prompt = new PromptDialog.PromptString(promptOptions);
+            context.Call<string>(prompt, DoneItemEnteredAsync);
         }
 
         private async Task DoneItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            if (input.ToLower() == "no")
+            _standup.Done.Add(input);
+
+            var text = "Did you complete anything else in the last cycle?";
+            PromptDialog.Confirm(context, FinishedDoneAsync, text);
+            /*
+            var promptOptions = new PromptOptions(
+                prompt: text,
+                speak: text
+                );
+            var prompt = new PromptDialog.PromptConfirm(promptOptions);
+            context.Call(prompt, FinishedDoneAsync);
+            */
+        }
+
+        private async Task FinishedDoneAsync(IDialogContext context, IAwaitable<bool> result)
+        {
+            bool done = await result;
+            if (done)
             {
-                EnsureCommitted(context);
-            } else { 
-                _standup.Done.Add(input);
-                PromptDialog.Text(context, DoneItemEnteredAsync, "Did you complete anything else in the last cycle?");
+                EnterDone(context);
+            } else
+            {
+                await context.PostAsync("Great. Thanks.");
+                EnterCommitted(context);
             }
         }
-        private void EnsureCommitted(IDialogContext context)
+
+        private void EnterCommitted(IDialogContext context)
         {
-            PromptDialog.Text(context, CommittedItemEnteredAsync, "What are you focussing on now?");
+            var text = "What are you focussing on now?";
+            var promptOptions = new PromptOptions<string>(
+                text,
+                speak: text
+                );
+
+            var prompt = new PromptDialog.PromptString(promptOptions);
+            context.Call<string>(prompt, CommittedItemEnteredAsync);
         }
 
         private async Task CommittedItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            if (input.ToLower() == "no")
+            _standup.Committed.Add(input);
+            var text = "Do you have any other focus items right now?";
+            PromptDialog.Confirm(context, FinishedCommittedAsync, text);
+        }
+
+        private async Task FinishedCommittedAsync(IDialogContext context, IAwaitable<bool> result)
+        {
+            bool done = await result;
+            if (done)
             {
-                EnsureIssues(context);
+                EnterCommitted(context);
             }
             else
             {
-                _standup.Committed.Add(input);
-                PromptDialog.Text(context, CommittedItemEnteredAsync, "Do you have any other focus items right now?");
+                await context.PostAsync("Great. Thanks.");
+                EnterIssues(context);
             }
         }
-        private void EnsureIssues(IDialogContext context)
+
+        private void EnterIssues(IDialogContext context)
         {
-            PromptDialog.Text(context, IssuesItemEnteredAsync, "Are there any issues blocking you right now?");
+            var text = "Are there any issues blocking you right now?";
+            var promptOptions = new PromptOptions<string>(
+                text,
+                speak: text
+                );
+
+            var prompt = new PromptDialog.PromptString(promptOptions);
+            context.Call<string>(prompt, IssuesItemEnteredAsync);
         }
 
         private async Task IssuesItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            if (input.ToLower() == "no" || input.ToLower() == "none" || input.ToLower() == "nothing" )
+            _standup.Issues.Add(input);
+            var text = "Any other blockers right now?";
+            PromptDialog.Confirm(context, FinishedIssuesAsync, text);
+        }
+
+        private async Task FinishedIssuesAsync(IDialogContext context, IAwaitable<bool> result)
+        {
+            bool done = await result;
+            if (done)
             {
-                SummaryReportAsync(context);
+                EnterIssues(context);
             }
             else
             {
-                _standup.Issues.Add(input);
-                PromptDialog.Text(context, IssuesItemEnteredAsync, "Any other blockers right now?");
-            }            
+                await context.PostAsync("Great. Thanks.");
+                SummaryReportAsync(context);
+            }
         }
 
         private void SummaryReportAsync(IDialogContext context)
         {
             string summary = _standup.Summary();
             summary += "\n\n\n\nDo you want to post this standup summary?";
-            PromptDialog.Text(context, StandupCompleteAsync, summary);
+            PromptDialog.Confirm(context, StandupCompleteAsync, summary);
         }
 
-        private async Task StandupCompleteAsync(IDialogContext context, IAwaitable<string> result)
+        private async Task StandupCompleteAsync(IDialogContext context, IAwaitable<bool> result)
         {
-            String input = await result;
-            if (input.ToLower() == "yes")
+            var done = await result;
+            if (done)
             {
                 await context.PostAsync("Great, thanks for completing your standup report.");
                 context.Done(_standup);
             }
             else
             {
-                EnsureStandupReportCompleted(context);
+                EnterDone(context);
             }
         }
     }
