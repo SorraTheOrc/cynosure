@@ -107,7 +107,7 @@ namespace cynosure.Dialogs
 
         private void EnterIssues(IDialogContext context)
         {
-            var text = "Are there any issues blocking you right now?";
+            var text = "What issues blocking you right now?";
             var promptOptions = new PromptOptions<string>(
                 text,
                 speak: text
