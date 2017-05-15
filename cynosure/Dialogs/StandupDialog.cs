@@ -13,6 +13,10 @@ namespace cynosure.Dialogs
     {
         public Task StartAsync(IDialogContext context)
         {
+            if (!context.UserData.TryGetValue(@"profile", out _standup))
+            {
+                _standup = new Standup();
+            }
             EnterDone(context);
             return Task.CompletedTask;
         }
@@ -20,11 +24,6 @@ namespace cynosure.Dialogs
         Standup _standup;
         private void EnterDone(IDialogContext context)
         {
-            if (!context.UserData.TryGetValue(@"profile", out _standup))
-            {
-                _standup = new Standup();
-            }
-
             var text = "What did you complete in the last cycle?";
             var promptOptions = new PromptOptions<string>(
                 text,
