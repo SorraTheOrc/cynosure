@@ -59,7 +59,7 @@ namespace cynosure.Dialogs
             context.UserData.SetValue(@"profile", profile);
         }
 
-        [RegexPattern("start standup|standup|start")]
+        [RegexPattern("start standup|standup|start|stand up")]
         [ScorableGroup(1)]
         public void StartStandup(IDialogContext context, IActivity activity)
         {
