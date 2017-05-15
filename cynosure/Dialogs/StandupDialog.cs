@@ -38,7 +38,10 @@ namespace cynosure.Dialogs
         private async Task DoneItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            _standup.Done.Add(input);
+            if (input.ToLower() != "nothing" || input.ToLower() != "none")
+            {
+                _standup.Done.Add(input);
+            }
 
             var text = "Did you complete anything else in the last cycle?";
             PromptDialog.Confirm(context, FinishedDoneAsync, text);
@@ -80,7 +83,10 @@ namespace cynosure.Dialogs
         private async Task CommittedItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            _standup.Committed.Add(input);
+            if (input.ToLower() != "nothing" || input.ToLower() != "none")
+            {
+                _standup.Committed.Add(input);
+            }
             var text = "Do you have any other focus items right now?";
             PromptDialog.Confirm(context, FinishedCommittedAsync, text);
         }
@@ -114,7 +120,10 @@ namespace cynosure.Dialogs
         private async Task IssuesItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            _standup.Issues.Add(input);
+            if (input.ToLower() != "nothing" || input.ToLower() != "none")
+            {
+                _standup.Issues.Add(input);
+            }
             var text = "Any other blockers right now?";
             PromptDialog.Confirm(context, FinishedIssuesAsync, text);
         }
