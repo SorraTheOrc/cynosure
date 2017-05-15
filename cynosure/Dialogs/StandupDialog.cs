@@ -13,6 +13,10 @@ namespace cynosure.Dialogs
     {
         public Task StartAsync(IDialogContext context)
         {
+            if (!context.UserData.TryGetValue(@"profile", out _standup))
+            {
+                _standup = new Standup();
+            }
             EnterDone(context);
             return Task.CompletedTask;
         }
@@ -20,11 +24,6 @@ namespace cynosure.Dialogs
         Standup _standup;
         private void EnterDone(IDialogContext context)
         {
-            if (!context.UserData.TryGetValue(@"profile", out _standup))
-            {
-                _standup = new Standup();
-            }
-
             var text = "What did you complete in the last cycle?";
             var promptOptions = new PromptOptions<string>(
                 text,
@@ -38,7 +37,10 @@ namespace cynosure.Dialogs
         private async Task DoneItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            _standup.Done.Add(input);
+            if (input.ToLower() != "nothing" || input.ToLower() != "none")
+            {
+                _standup.Done.Add(input);
+            }
 
             var text = "Did you complete anything else in the last cycle?";
             PromptDialog.Confirm(context, FinishedDoneAsync, text);
@@ -80,7 +82,10 @@ namespace cynosure.Dialogs
         private async Task CommittedItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            _standup.Committed.Add(input);
+            if (input.ToLower() != "nothing" || input.ToLower() != "none")
+            {
+                _standup.Committed.Add(input);
+            }
             var text = "Do you have any other focus items right now?";
             PromptDialog.Confirm(context, FinishedCommittedAsync, text);
         }
@@ -101,7 +106,7 @@ namespace cynosure.Dialogs
 
         private void EnterIssues(IDialogContext context)
         {
-            var text = "Are there any issues blocking you right now?";
+            var text = "What issues blocking you right now?";
             var promptOptions = new PromptOptions<string>(
                 text,
                 speak: text
@@ -114,7 +119,10 @@ namespace cynosure.Dialogs
         private async Task IssuesItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            _standup.Issues.Add(input);
+            if (input.ToLower() != "nothing" || input.ToLower() != "none")
+            {
+                _standup.Issues.Add(input);
+            }
             var text = "Any other blockers right now?";
             PromptDialog.Confirm(context, FinishedIssuesAsync, text);
         }
