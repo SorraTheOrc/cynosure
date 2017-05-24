@@ -24,10 +24,18 @@ namespace cynosure.Dialogs
         Standup _standup;
         private void EnterDone(IDialogContext context)
         {
-            var text = "What did you complete in the last cycle?";
+            var text = Standup.ItemsSummary("Items already recorded as done:", _standup.Done);
+            string promptText;
+            if (_standup.Done.Any())
+            {
+                promptText = "What else did you complete in the last cycle?";
+            } else
+            {
+                promptText = "What did you complete in the last cycle?";
+            }
             var promptOptions = new PromptOptions<string>(
-                text,
-                speak: text
+                text + "\n\n\n\n" + promptText,
+                speak: promptText
                 );
 
             var prompt = new PromptDialog.PromptString(promptOptions);
@@ -37,26 +45,12 @@ namespace cynosure.Dialogs
         private async Task DoneItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            if (input.ToLower() != "nothing" || input.ToLower() != "none")
+            if (input.ToLower() != "nothing" && input.ToLower() != "no")
             {
                 _standup.Done.Add(input);
-            }
-
-            var text = "Did you complete anything else in the last cycle?";
-            var promptOptions = new PromptOptions<string>(
-                prompt: text,
-                speak: text
-                );
-            PromptDialog.Confirm(context, FinishedDoneAsync, promptOptions);
-        }
-
-        private async Task FinishedDoneAsync(IDialogContext context, IAwaitable<bool> result)
-        {
-            bool done = await result;
-            if (done)
-            {
                 EnterDone(context);
-            } else
+            }
+            else
             {
                 await context.PostAsync("Great. Thanks.");
                 EnterCommitted(context);
@@ -65,10 +59,19 @@ namespace cynosure.Dialogs
 
         private void EnterCommitted(IDialogContext context)
         {
-            var text = "What are you focussing on now?";
+            var text = Standup.ItemsSummary("Items already recorded as focus items for today:", _standup.Committed);
+            string promptText;
+            if (_standup.Committed.Any())
+            {
+                promptText = "What else are you focusing on today?";
+            }
+            else
+            {
+                promptText = "What will you focus on today?";
+            }
             var promptOptions = new PromptOptions<string>(
-                text,
-                speak: text
+                text + "\n\n\n\n" + promptText,
+                speak: promptText
                 );
 
             var prompt = new PromptDialog.PromptString(promptOptions);
@@ -78,19 +81,9 @@ namespace cynosure.Dialogs
         private async Task CommittedItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            if (input.ToLower() != "nothing" || input.ToLower() != "none")
+            if (input.ToLower() != "nothing" && input.ToLower() != "no")
             {
                 _standup.Committed.Add(input);
-            }
-            var text = "Do you have any other focus items right now?";
-            PromptDialog.Confirm(context, FinishedCommittedAsync, text);
-        }
-
-        private async Task FinishedCommittedAsync(IDialogContext context, IAwaitable<bool> result)
-        {
-            bool done = await result;
-            if (done)
-            {
                 EnterCommitted(context);
             }
             else
@@ -102,10 +95,19 @@ namespace cynosure.Dialogs
 
         private void EnterIssues(IDialogContext context)
         {
-            var text = "What issues blocking you right now?";
+            var text = Standup.ItemsSummary("Items already recorded as blocking:", _standup.Issues);
+            string promptText;
+            if (_standup.Issues.Any())
+            {
+                promptText = "What other blockers you are facing right now?";
+            }
+            else
+            {
+                promptText = "What blockers are you facing at the moment?";
+            }
             var promptOptions = new PromptOptions<string>(
-                text,
-                speak: text
+                text + "\n\n\n\n" + promptText,
+                speak: promptText
                 );
 
             var prompt = new PromptDialog.PromptString(promptOptions);
@@ -115,19 +117,9 @@ namespace cynosure.Dialogs
         private async Task IssuesItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            if (input.ToLower() != "nothing" || input.ToLower() != "none")
+            if (input.ToLower() != "nothing" && input.ToLower() != "no")
             {
                 _standup.Issues.Add(input);
-            }
-            var text = "Any other blockers right now?";
-            PromptDialog.Confirm(context, FinishedIssuesAsync, text);
-        }
-
-        private async Task FinishedIssuesAsync(IDialogContext context, IAwaitable<bool> result)
-        {
-            bool done = await result;
-            if (done)
-            {
                 EnterIssues(context);
             }
             else
@@ -146,8 +138,8 @@ namespace cynosure.Dialogs
 
         private async Task StandupCompleteAsync(IDialogContext context, IAwaitable<bool> result)
         {
-            var done = await result;
-            if (done)
+            var more = await result;
+            if (more)
             {
                 await context.PostAsync("Great, thanks for completing your standup report.");
                 context.Done(_standup);

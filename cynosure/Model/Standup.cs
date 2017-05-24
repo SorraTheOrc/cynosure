@@ -21,15 +21,23 @@ namespace cynosure.Model
 
         public string Summary()
         {
-            String summary = "DONE:\n\n";
-            foreach (var item in Done)
-                summary += item + "\n\n";
-            summary += "\n\n\n\nFOCUSING ON:\n\n";
-            foreach (var item in Committed)
-                summary += item + "\n\n";
-            summary += "\n\n\n\nBARRIERS:\n\n";
-            foreach (var item in Issues)
-                summary += item + "\n\n";
+            string summary = ItemsSummary("DONE", Done);
+            summary += ItemsSummary("FOCUSING ON", Committed);
+            summary += ItemsSummary("BARRIERS", Issues);
+            return summary;
+        }
+
+        public static string ItemsSummary(string prefix, List<string> items)
+        {
+            String summary = prefix + "\n\n";
+            if (items.Any())
+            {
+                foreach (var item in items)
+                    summary += item + "\n\n";
+            } else
+            {
+                summary += "None" + "\n\n";
+            }
             return summary;
         }
     }
