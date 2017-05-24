@@ -45,7 +45,7 @@ namespace cynosure.Dialogs
         private async Task DoneItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            if (input.ToLower() != "nothing" && input.ToLower() != "no")
+            if (IsLastInput(input))
             {
                 _standup.Done.Add(input);
                 EnterDone(context);
@@ -81,7 +81,7 @@ namespace cynosure.Dialogs
         private async Task CommittedItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            if (input.ToLower() != "nothing" && input.ToLower() != "no")
+            if (IsLastInput(input))
             {
                 _standup.Committed.Add(input);
                 EnterCommitted(context);
@@ -117,7 +117,7 @@ namespace cynosure.Dialogs
         private async Task IssuesItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            if (input.ToLower() != "nothing" && input.ToLower() != "no")
+            if (IsLastInput(input))
             {
                 _standup.Issues.Add(input);
                 EnterIssues(context);
@@ -127,6 +127,11 @@ namespace cynosure.Dialogs
                 await context.PostAsync("Great. Thanks.");
                 SummaryReportAsync(context);
             }
+        }
+
+        private static bool IsLastInput(string input)
+        {
+            return input.ToLower() != "nothing" && input.ToLower() != "nothing more" && input.ToLower() != "none" && input.ToLower() != "no";
         }
 
         private void SummaryReportAsync(IDialogContext context)
