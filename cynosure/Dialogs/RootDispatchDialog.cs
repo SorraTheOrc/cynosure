@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using cynosure.Model;
 using Microsoft.Bot.Builder.Scorables;
 using Microsoft.ApplicationInsights;
+using System.Reflection;
 
 namespace cynosure.Dialogs
 {
@@ -83,13 +84,23 @@ namespace cynosure.Dialogs
                 await context.PostAsync("There is no standup data right now. You can 'start standup' if you like");
             }
             context.Done(true);
-;        }
+         }
 
         [RegexPattern("help")]
-        [ScorableGroup(1)]
+        [ScorableGroup(2)]
         public async Task Help(IDialogContext context, IActivity activity)
         {
             await this.DefaultAsync(context, activity);
+        }
+
+        [RegexPattern("version")]
+        [ScorableGroup(2)]
+        public async Task Version(IDialogContext context, IActivity activity)
+        {
+            Assembly thisAssem = typeof(RootDispatchDialog).Assembly;
+            AssemblyName thisAssemName = thisAssem.GetName();
+
+            await context.PostAsync(thisAssemName.ToString());
         }
 
         [MethodBind]

@@ -45,7 +45,7 @@ namespace cynosure.Dialogs
         private async Task DoneItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            if (input.ToLower() != "nothing" && input.ToLower() != "no")
+            if (IsLastInput(input))
             {
                 _standup.Done.Add(input);
                 EnterDone(context);
@@ -81,7 +81,7 @@ namespace cynosure.Dialogs
         private async Task CommittedItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            if (input.ToLower() != "nothing" && input.ToLower() != "no")
+            if (IsLastInput(input))
             {
                 _standup.Committed.Add(input);
                 EnterCommitted(context);
@@ -117,7 +117,7 @@ namespace cynosure.Dialogs
         private async Task IssuesItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            if (input.ToLower() != "nothing" && input.ToLower() != "no")
+            if (IsLastInput(input))
             {
                 _standup.Issues.Add(input);
                 EnterIssues(context);
@@ -125,29 +125,26 @@ namespace cynosure.Dialogs
             else
             {
                 await context.PostAsync("Great. Thanks.");
-                SummaryReportAsync(context);
+                await SummaryReportAsync(context);
             }
         }
 
-        private void SummaryReportAsync(IDialogContext context)
+        private static bool IsLastInput(string input)
+        {
+            return input.ToLower() != "nothing" && input.ToLower() != "nothing more" && input.ToLower() != "none" && input.ToLower() != "no";
+        }
+
+        private async Task SummaryReportAsync(IDialogContext context)
         {
             string summary = _standup.Summary();
-            summary += "\n\n\n\nDo you want to post this standup summary?";
-            PromptDialog.Confirm(context, StandupCompleteAsync, summary);
-        }
 
-        private async Task StandupCompleteAsync(IDialogContext context, IAwaitable<bool> result)
-        {
-            var more = await result;
-            if (more)
-            {
-                await context.PostAsync("Great, thanks for completing your standup report.");
-                context.Done(_standup);
-            }
-            else
-            {
-                EnterDone(context);
-            }
+            var text = "Your current standup report is:\n\n\n\n" + summary;
+            var promptOptions = new PromptOptions<string>(
+                text,
+                speak: text
+                );
+            await context.PostAsync(text);
+            context.Done(_standup);
         }
     }
 }
