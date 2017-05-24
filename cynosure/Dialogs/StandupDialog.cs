@@ -125,7 +125,7 @@ namespace cynosure.Dialogs
             else
             {
                 await context.PostAsync("Great. Thanks.");
-                SummaryReportAsync(context);
+                await SummaryReportAsync(context);
             }
         }
 
@@ -134,25 +134,17 @@ namespace cynosure.Dialogs
             return input.ToLower() != "nothing" && input.ToLower() != "nothing more" && input.ToLower() != "none" && input.ToLower() != "no";
         }
 
-        private void SummaryReportAsync(IDialogContext context)
+        private async Task SummaryReportAsync(IDialogContext context)
         {
             string summary = _standup.Summary();
-            summary += "\n\n\n\nDo you want to post this standup summary?";
-            PromptDialog.Confirm(context, StandupCompleteAsync, summary);
-        }
 
-        private async Task StandupCompleteAsync(IDialogContext context, IAwaitable<bool> result)
-        {
-            var more = await result;
-            if (more)
-            {
-                await context.PostAsync("Great, thanks for completing your standup report.");
-                context.Done(_standup);
-            }
-            else
-            {
-                EnterDone(context);
-            }
+            var text = "Your current standup report is:\n\n\n\n" + summary;
+            var promptOptions = new PromptOptions<string>(
+                text,
+                speak: text
+                );
+            await context.PostAsync(text);
+            context.Done(_standup);
         }
     }
 }
