@@ -43,15 +43,11 @@ namespace cynosure.Dialogs
             }
 
             var text = "Did you complete anything else in the last cycle?";
-            PromptDialog.Confirm(context, FinishedDoneAsync, text);
-            /*
-            var promptOptions = new PromptOptions(
+            var promptOptions = new PromptOptions<string>(
                 prompt: text,
                 speak: text
                 );
-            var prompt = new PromptDialog.PromptConfirm(promptOptions);
-            context.Call(prompt, FinishedDoneAsync);
-            */
+            PromptDialog.Confirm(context, FinishedDoneAsync, promptOptions);
         }
 
         private async Task FinishedDoneAsync(IDialogContext context, IAwaitable<bool> result)

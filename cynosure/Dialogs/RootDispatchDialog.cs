@@ -68,7 +68,7 @@ namespace cynosure.Dialogs
             context.Call<Standup>(new StandupDialog(), standupUpdatedAsync);
         }
 
-        [RegexPattern("standup summar|summary|standup report|report")]
+        [RegexPattern("standup summary|summary|standup report|report")]
         [ScorableGroup(1)]
         public async Task StandupSummary(IDialogContext context, IActivity activity)
         {
