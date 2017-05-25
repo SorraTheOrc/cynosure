@@ -45,10 +45,8 @@ namespace cynosure.Dialogs
         private async Task DoneItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            await context.PostAsync("You entered: '" + input + "'");
             if (IsLastInput(input))
             {
-                await context.PostAsync("Great. Thanks.");
                 EnterCommitted(context);
             }
             else
@@ -84,7 +82,6 @@ namespace cynosure.Dialogs
             string input = await result;
             if (IsLastInput(input))
             {
-                await context.PostAsync("Great. Thanks.");
                 EnterIssues(context);
             }
             else
@@ -120,7 +117,6 @@ namespace cynosure.Dialogs
             string input = await result;
             if (IsLastInput(input))
             {
-                await context.PostAsync("Great. Thanks.");
                 await SummaryReportAsync(context);
             }
             else
