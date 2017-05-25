@@ -47,13 +47,13 @@ namespace cynosure.Dialogs
             string input = await result;
             if (IsLastInput(input))
             {
-                _standup.Done.Add(input);
-                EnterDone(context);
+                await context.PostAsync("Great. Thanks.");
+                EnterCommitted(context);
             }
             else
             {
-                await context.PostAsync("Great. Thanks.");
-                EnterCommitted(context);
+                _standup.Done.Add(input);
+                EnterDone(context);
             }
         }
 
@@ -83,13 +83,13 @@ namespace cynosure.Dialogs
             string input = await result;
             if (IsLastInput(input))
             {
-                _standup.Committed.Add(input);
-                EnterCommitted(context);
+                await context.PostAsync("Great. Thanks.");
+                EnterIssues(context);
             }
             else
             {
-                await context.PostAsync("Great. Thanks.");
-                EnterIssues(context);
+                _standup.Committed.Add(input);
+                EnterCommitted(context);
             }
         }
 
@@ -119,19 +119,26 @@ namespace cynosure.Dialogs
             string input = await result;
             if (IsLastInput(input))
             {
-                _standup.Issues.Add(input);
-                EnterIssues(context);
+                await context.PostAsync("Great. Thanks.");
+                await SummaryReportAsync(context);
             }
             else
             {
-                await context.PostAsync("Great. Thanks.");
-                await SummaryReportAsync(context);
+                _standup.Issues.Add(input);
+                EnterIssues(context);
             }
         }
 
         private static bool IsLastInput(string input)
         {
-            return input.ToLower() != "nothing" && input.ToLower() != "nothing more" && input.ToLower() != "none" && input.ToLower() != "no";
+            string[] lastWords = new string[] { "nothing", "nothing more", "nothing else", "none", "no", "no more" };
+
+            bool finished = false;
+            foreach (string word in lastWords)
+            {
+                finished = finished || (input.ToLower() == word);
+            }
+            return finished;
         }
 
         private async Task SummaryReportAsync(IDialogContext context)
