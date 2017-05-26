@@ -27,17 +27,41 @@ namespace cynosure.Model
             return summary;
         }
 
-        public static string ItemsSummary(string prefix, List<string> items)
+        public enum ItemSummaryFormat {
+            List,
+            NumberedList
+        };
+
+        public static string ItemsSummary(string prefix, List<string> items, ItemSummaryFormat format = ItemSummaryFormat.NumberedList)
         {
-            String summary = prefix + "\n\n";
+            string separator = "\n\n";
+            int idx = 1;
+            String summary = prefix + separator;
             if (items.Any())
             {
+                var last = items.Last();
                 foreach (var item in items)
-                    summary += item + "\n\n";
+                {
+                    if (format == ItemSummaryFormat.NumberedList)
+                    {
+                        summary += idx + ". ";
+                        idx++;
+                    }
+
+                    if (!item.Equals(last))
+                    {
+                        summary += item + separator;
+                    }
+                    else
+                    {
+                        summary += item;
+                    }
+                }
             } else
             {
-                summary += "None" + "\n\n";
+                summary += "None";
             }
+            summary += "\n\n";
             return summary;
         }
     }
