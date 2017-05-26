@@ -20,18 +20,35 @@ namespace cynosure.Dialogs
             EnterDone(context);
             return Task.CompletedTask;
         }
+        
+        private async Task DoneCompleteCommittedAsync(IDialogContext context, IAwaitable<string> result)
+        {
+            string input = await result;
+            if (IsLastInput(input))
+            {
+                EnterDone(context);
+            }
+            else
+            {
+                _standup.Done.Add(input);
+                _standup.Committed.Remove(input);
+                context.UserData.SetValue(@"profile", _standup);
+                EnterDone(context);
+            }
+        }
 
         Standup _standup;
         private void EnterDone(IDialogContext context)
         {
             var text = Standup.ItemsSummary("Items already recorded as done:", _standup.Done);
             string promptText;
-            if (_standup.Done.Any())
+            if (_standup.Committed.Any())
             {
-                promptText = "What else did you complete in the last cycle?";
+                text += "\n\n\n\n" + Standup.ItemsSummary("Currently committed items are:", _standup.Committed);
+                promptText = "Enter a new \"Done\" item or enter an existing committed item to promote it to done (you can use the numbers for this too). When you have finished updating your \"Done\" items say \"Finished\"";
             } else
             {
-                promptText = "What did you complete in the last cycle?";
+                promptText = "Enter a new \"Done\" item. When you have finished updating your \"Done\" items say \"Finished\"";
             }
             var promptOptions = new PromptOptions<string>(
                 text + "\n\n\n\n" + promptText,
@@ -51,7 +68,29 @@ namespace cynosure.Dialogs
             }
             else
             {
-                _standup.Done.Add(input);
+                int intVal;
+                if (int.TryParse(input, out intVal))
+                {   
+                    input = _standup.Committed.ElementAt(intVal - 1);
+                }
+
+                if (isAll(input))
+                {
+                    var committed = _standup.Committed;
+                    for (int i = _standup.Committed.Count -1; i >= 0; i--)
+                    {
+                        var item = _standup.Committed.ElementAt(i);
+                        _standup.Done.Add(item);
+                        _standup.Committed.Remove(item);
+                    }
+                }
+                else
+                {
+                    _standup.Done.Add(input);
+                    _standup.Committed.Remove(input);
+                }
+
+                context.UserData.SetValue(@"profile", _standup);
                 EnterDone(context);
             }
         }
@@ -87,6 +126,7 @@ namespace cynosure.Dialogs
             else
             {
                 _standup.Committed.Add(input);
+                context.UserData.SetValue(@"profile", _standup);
                 EnterCommitted(context);
             }
         }
@@ -122,16 +162,29 @@ namespace cynosure.Dialogs
             else
             {
                 _standup.Issues.Add(input);
+                context.UserData.SetValue(@"profile", _standup);
                 EnterIssues(context);
             }
         }
 
         private static bool IsLastInput(string input)
         {
-            string[] lastWords = new string[] { "nothing", "nothing more", "nothing else", "none", "no", "no more" };
+            string[] lastWords = new string[] { "nothing", "nothing more", "nothing else", "none", "no", "no more", "finished", "done" };
 
             bool finished = false;
             foreach (string word in lastWords)
+            {
+                finished = finished || (input.ToLower() == word);
+            }
+            return finished;
+        }
+
+        private static bool isAll(string input)
+        {
+            string[] allWords = new string[] { "all", "everything"};
+
+            bool finished = false;
+            foreach (string word in allWords)
             {
                 finished = finished || (input.ToLower() == word);
             }
