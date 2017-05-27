@@ -117,9 +117,12 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
+    <Compile Include="Dialogs\BaseItemsDialog.cs" />
+    <Compile Include="Dialogs\IssueItemsDialog.cs" />
     <Compile Include="Dialogs\RootDispatchDialog.cs" />
     <Compile Include="Dialogs\HelpDialog.cs" />
-    <Compile Include="Dialogs\StandupDialog.cs" />
+    <Compile Include="Dialogs\CommittedItemsDialog.cs" />
+    <Compile Include="Dialogs\DoneItemsDialog.cs" />
     <Compile Include="Dialogs\UpdateUserProfileDialog.cs" />
     <Compile Include="Model\Standup.cs" />
     <Compile Include="Model\UserProfile.cs" />
