@@ -46,186 +46,218 @@
             content: "[Not Implemented Yet]";
             color: red
         }
+        .wrap {
+            background: #99c
+        }
+        .right {
+            float: right;
+            width: 24%;
+            background: #f2f0f0
+        }
+        .left {
+            float:left;
+            width: 74%;
+        }
     </style>
 </head>
 <body>
-    <h1>Cynosure</h1>
-    <p>This is an open source bot that will help you stay coordinated and focussed.
-       Essentially you can run standups with it and then review your objectives throughout the day.</p>
-
-    <p>The Bot will work with:</p>
-    <ul>
-        <li>Cortana</li>
-        <li>Skype</li>
-        <li>Slack</li>
-        <li>Web Chat</li>
-    </ul>
-
-    <p>To try out a demo of the application click the Skype icon (bottom right). 
-    You will need a skype account for this to work.</p>
-    <span class="skype-button bubble "></span>
-    <script src="https://latest-swc.cdn.skype.com/sdk/v1/sdk.js"></script>
-
-    <p>Check out the code on <a href="http://github.com/rgardler/cynosure">GitHub</a> 
-    - contributions welcome.</p>
-
-    <h2>Usage</h2>
-    <p>Here's an example of the kind of conversation we hope to enable with Cynosure.
-    At present this is not really how things work. As I type the conversation is more
-    Question and Answer than conversation. This example is included to illustrate what 
-    is planned, you can see what the current status is by looking for 
-    <span class="todo"></span> and <span class="inprogress"></span> labels.</p>
-
-    <div class="conversation">
-        <div class="user">
-            <p>Start a standup</p>
-        </div>
-
-        <div class="cynosure">
-            <p>Items already recorded as done:</p>
-            <p>None</p>
-
-            <p>The items you planned to work on in the last standup were:</p>
-            <ol>
-                <li>Write example conversation for Cynousre</li>
-                <li>Create CSS for rendering Cynosure conversations in documentation</li>
-                <li>Learn how to implement the example conversation using LUIS</li>
-            </ol>
-
-            <p>Enter a new “Done” item or enter an existing committed item to promote it 
-            to done (you can use the numbers for this too). When you have finished 
-            updating your “Done” items say “Finished”</p>
-        </div>
-
-        <div class="user">
-            <p class="inprogress">Can do "all" but not "all but..."</p>
-            <p>All but learning how to implement with LUIS.</p>
-        </div>
-
-        <div class="cynosure">
-            <p>Your standup report is:</p>
+    <div class="wrap">
+        <div class="left">
+            <h1>Cynosure</h1>
             <p>
-                DONE
-                <ol>
-                    <li>Write example conversation for Cynousre</li>
-                    <li>Create CSS for rendering Cynosure conversations in documentation</li>
-                </ol>
+                This is an open source bot that will help you stay coordinated and focussed.
+                Essentially you can run standups with it and then review your objectives throughout the day.
             </p>
+
+            <p>The Bot will work with:</p>
+            <ul>
+                <li>Cortana</li>
+                <li>Skype</li>
+                <li>Slack</li>
+                <li>Web Chat</li>
+            </ul>
+
             <p>
-                TODAY
-                <ol>
-                    <li>Learn how to implement the example conversation using LUIS</li>
-                </ol>
+                To try out a demo of the application click the Skype icon (bottom right).
+                You will need a skype account for this to work.
             </p>
+            <span class="skype-button bubble "></span>
+            <script src="https://latest-swc.cdn.skype.com/sdk/v1/sdk.js"></script>
+
             <p>
-                NEEDS
-                <ol>
-                    <li>Unit testing for Cynosure</li>
-                    <li>A separate test and dev deployment</li>
-                </ol>
+                Check out the code on <a href="http://github.com/rgardler/cynosure">GitHub</a>
+                - contributions welcome.
             </p>
-        </div>
 
-        <div class="user">
-            <p class="todo"></p>
-            <p>Remove need for unit testing, with thanks to Jane</p>
-        </div>
-
-        <div class="cynosure">
-            <p class="todo"></p>
-            <p>Removed the need for unit testing.</p>
-        </div>
-
-        <div class="user">
-            <p class="todo"></p>
-            <p>Add an item for today saying "Write test script for example conversation"</p>
-        </div>
-
-        <div class="cynosure">
-            <p class="todo"></p>
-            <p>"Write a test script for example conversation" added to items for today</p>
-        </div>
-
-        <div class="user">
-            <p class="todo"></p>
-            <p>Add an item for today saying "Deploy latest test code for Cynosure"</p>
-        </div>
-
-        <div class="cynosure">
-            <p class="todo"></p>
-            <p>"Deploy latest test code for Cynosure" added to items for today</p>
-        </div>
-
-        <div class="user">
-            <p class="todo"></p>
-            <p>Add a need for "Continuous Deployment of dev branch to test bot"</p>
-        </div>
-
-        <div class="cynosure">
-            <p class="todo"></p>
-            <p>Recorded a need for "Continuous Deployment of dev branch to test bot".</p>
-        </div>
-
-        <div class="user">
-            <p class="todo"></p>
-            <p>Report</p>
-        </div>
-
-        <div class="cynosure">
-            <p class="todo"></p>
-            <p>Your standup report was updated seconds ago and reads:</p>
+            <h2>Usage</h2>
             <p>
-                DONE
-                <ol>
-                    <li>Write example conversation for Cynousre</li>
-                    <li>Create CSS for rendering Cynosure conversations in documentation</li>
-                    <li>Removed need "Unit testing for Cynosure" (thanks go to Jane)</li>
-                </ol>
+                Here's an example of the kind of conversation we hope to enable with Cynosure.
+                At present this is not really how things work. As I type the conversation is more
+                Question and Answer than conversation. This example is included to illustrate what
+                is planned, you can see what the current status is by looking for
+                <span class="todo"></span> and <span class="inprogress"></span> labels.
             </p>
-            <p>
-                TODAY
-                <ol>
-                    <li>Learn how to implement the example conversation using LUIS</li>
-                    <li>Write test script for example conversation</li>
-                    <li>Deploy latest test code for Cynosure</li>
-                </ol>
-            </p>
-            <p>
-                NEEDS
-                <ol>
-                    <li>A separate test and dev deployment</li>
-                    <li>Continuous Deployment of dev branch to test bot</li>
-                </ol>
-            </p>
-            <p>
-                You can now edit this report with instructions such as "add done items",
-                "add item for today", "add a need", "remove a need" and more.
-            </p>
+
+            <div class="conversation">
+                <div class="user">
+                    <p>Start a standup</p>
+                </div>
+
+                <div class="cynosure">
+                    <p>Items already recorded as done:</p>
+                    <p>None</p>
+
+                    <p>The items you planned to work on in the last standup were:</p>
+                    <ol>
+                        <li>Write example conversation for Cynousre</li>
+                        <li>Create CSS for rendering Cynosure conversations in documentation</li>
+                        <li>Learn how to implement the example conversation using LUIS</li>
+                    </ol>
+
+                    <p>
+                        Enter a new “Done” item or enter an existing committed item to promote it
+                        to done (you can use the numbers for this too). When you have finished
+                        updating your “Done” items say “Finished”
+                    </p>
+                </div>
+
+                <div class="user">
+                    <p class="inprogress">Can do "all" but not "all but..."</p>
+                    <p>All but learning how to implement with LUIS.</p>
+                </div>
+
+                <div class="cynosure">
+                    <p>Your standup report is:</p>
+                    <p>
+                        DONE
+                        <ol>
+                            <li>Write example conversation for Cynousre</li>
+                            <li>Create CSS for rendering Cynosure conversations in documentation</li>
+                        </ol>
+                    </p>
+                    <p>
+                        TODAY
+                        <ol>
+                            <li>Learn how to implement the example conversation using LUIS</li>
+                        </ol>
+                    </p>
+                    <p>
+                        NEEDS
+                        <ol>
+                            <li>Unit testing for Cynosure</li>
+                            <li>A separate test and dev deployment</li>
+                        </ol>
+                    </p>
+                </div>
+
+                <div class="user">
+                    <p class="todo"></p>
+                    <p>Remove need for unit testing, with thanks to Jane</p>
+                </div>
+
+                <div class="cynosure">
+                    <p class="todo"></p>
+                    <p>Removed the need for unit testing.</p>
+                </div>
+
+                <div class="user">
+                    <p class="todo"></p>
+                    <p>Add an item for today saying "Write test script for example conversation"</p>
+                </div>
+
+                <div class="cynosure">
+                    <p class="todo"></p>
+                    <p>"Write a test script for example conversation" added to items for today</p>
+                </div>
+
+                <div class="user">
+                    <p class="todo"></p>
+                    <p>Add an item for today saying "Deploy latest test code for Cynosure"</p>
+                </div>
+
+                <div class="cynosure">
+                    <p class="todo"></p>
+                    <p>"Deploy latest test code for Cynosure" added to items for today</p>
+                </div>
+
+                <div class="user">
+                    <p class="todo"></p>
+                    <p>Add a need for "Continuous Deployment of dev branch to test bot"</p>
+                </div>
+
+                <div class="cynosure">
+                    <p class="todo"></p>
+                    <p>Recorded a need for "Continuous Deployment of dev branch to test bot".</p>
+                </div>
+
+                <div class="user">
+                    <p class="todo"></p>
+                    <p>Report</p>
+                </div>
+
+                <div class="cynosure">
+                    <p class="todo"></p>
+                    <p>Your standup report was updated seconds ago and reads:</p>
+                    <p>
+                        DONE
+                        <ol>
+                            <li>Write example conversation for Cynousre</li>
+                            <li>Create CSS for rendering Cynosure conversations in documentation</li>
+                            <li>Removed need "Unit testing for Cynosure" (thanks go to Jane)</li>
+                        </ol>
+                    </p>
+                    <p>
+                        TODAY
+                        <ol>
+                            <li>Learn how to implement the example conversation using LUIS</li>
+                            <li>Write test script for example conversation</li>
+                            <li>Deploy latest test code for Cynosure</li>
+                        </ol>
+                    </p>
+                    <p>
+                        NEEDS
+                        <ol>
+                            <li>A separate test and dev deployment</li>
+                            <li>Continuous Deployment of dev branch to test bot</li>
+                        </ol>
+                    </p>
+                    <p>
+                        You can now edit this report with instructions such as "add done items",
+                        "add item for today", "add a need", "remove a need" and more.
+                    </p>
+                </div>
+            </div>
+
+            <h3>Command Words</h3>
+            <dl>
+                <dt>Start standup</dt>
+                <dd>Start a standup. Answer the questions in order. Say "Nothing else" to end input on a question.</dd>
+
+                <dt>Edit done</dt>
+                <dd>Edit the items listed as done</dd>
+
+                <dt>Edit commitments</dt>
+                <dd>Edit the items listed as commitments</dd>
+
+                <dt>Edit issues</dt>
+                <dd>Edit the items listed as issues blocking progress</dd>
+
+                <dt>Report</dt>
+                <dd>Report on current standup</dd>
+
+                <dt>Help</dt>
+                <dd>Get help</dd>
+
+                <dt>Version</dt>
+                <dd>Get version information for this instance of the bot</dd>
+            </dl>
+        </div>
+
+        <div class="right">
+            <h3>Test the development version</h3>
+            <p>This is the dev version of the bot, be prepared for bugs.</p>
+            <iframe height="640" src='https://webchat.botframework.com/embed/Cynosure-Dev?s=rGV7pWm4n6E.cwA.edA.ePOhSkF5WjRbBtoimivn3PDT2fQsNk5InGWIWY4h7tw'></iframe>
         </div>
     </div>
-
-    <h3>Command Words</h3>
-    <dl>
-        <dt>Start standup</dt>
-        <dd>Start a standup. Answer the questions in order. Say "Nothing else" to end input on a question.</dd>
-
-        <dt>Edit done</dt>
-        <dd>Edit the items listed as done</dd>
-
-        <dt>Edit commitments</dt>
-        <dd>Edit the items listed as commitments</dd>
-        
-        <dt>Edit issues</dt>
-        <dd>Edit the items listed as issues blocking progress</dd>
-
-        <dt>Report</dt>
-        <dd>Report on current standup</dd>
-
-        <dt>Help</dt>
-        <dd>Get help</dd>
-
-        <dt>Version</dt>
-        <dd>Get version information for this instance of the bot</dd>
-    </dl>
 </body>
 </html>
