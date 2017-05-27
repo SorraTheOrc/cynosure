@@ -9,7 +9,7 @@ using cynosure.Model;
 namespace cynosure.Dialogs
 {
     [Serializable]
-    public class DoneItemsDialog : BaseItemsDialog
+    public class DoneItemsDialog : BaseDialog
     {
         public override Task StartAsync(IDialogContext context)
         {
@@ -24,23 +24,6 @@ namespace cynosure.Dialogs
             }
             EnterDone(context);
             return Task.CompletedTask;
-        }
-        
-        private async Task DoneCompleteCommittedAsync(IDialogContext context, IAwaitable<string> result)
-        {
-            string input = await result;
-            if (IsLastInput(input))
-            {
-                await SummaryReportAsync(context);
-                EnterDone(context);
-            }
-            else
-            {
-                _standup.Done.Add(input);
-                _standup.Committed.Remove(input);
-                context.UserData.SetValue(@"profile", _standup);
-                EnterDone(context);
-            }
         }
 
         private void EnterDone(IDialogContext context)
@@ -67,7 +50,17 @@ namespace cynosure.Dialogs
         private async Task DoneItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            if (IsLastInput(input))
+            if (IsHelp(input))
+            {
+                await DisplayHelpCard(context);
+                var promptOptions = new PromptOptions<string>(
+                    "What do you want to do?",
+                    speak: "What do you want to do?"
+                    );
+                var prompt = new PromptDialog.PromptString(promptOptions);
+                context.Call<string>(prompt, DoneItemEnteredAsync);
+            }
+            else if (IsLastInput(input))
             {
                 await SummaryReportAsync(context);
                 context.Done(_standup);
@@ -100,5 +93,14 @@ namespace cynosure.Dialogs
                 EnterDone(context);
             }
         }
+
+        internal override List<Command> Commands()
+        {
+            List<Command> commands = new List<Command>();
+            commands.Add(new Command("Finished", "Finish editing the done items"));
+            return commands;
+        }
     }
+
+
 }

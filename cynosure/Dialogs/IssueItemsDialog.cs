@@ -9,7 +9,7 @@ using cynosure.Model;
 namespace cynosure.Dialogs
 {
     [Serializable]
-    public class IssueItemsDialog : BaseItemsDialog
+    public class IssueItemsDialog : BaseDialog
     {
         public override Task StartAsync(IDialogContext context)
         {
@@ -45,7 +45,17 @@ namespace cynosure.Dialogs
         private async Task IssuesItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
-            if (IsLastInput(input))
+            if (IsHelp(input))
+            {
+                await DisplayHelpCard(context);
+                var promptOptions = new PromptOptions<string>(
+                    "What do you want to do?",
+                    speak: "What do you want to do?"
+                    );
+                var prompt = new PromptDialog.PromptString(promptOptions);
+                context.Call<string>(prompt, IssuesItemEnteredAsync);
+            }
+            else if (IsLastInput(input))
             {
                 await SummaryReportAsync(context);
                 context.Done(_standup);
@@ -56,6 +66,13 @@ namespace cynosure.Dialogs
                 context.UserData.SetValue(@"profile", _standup);
                 EnterIssues(context);
             }
+        }
+
+        internal override List<Command> Commands()
+        {
+            List<Command> commands = new List<Command>();
+            commands.Add(new Command("Finished", "Finish editing issues"));
+            return commands;
         }
     }
 }

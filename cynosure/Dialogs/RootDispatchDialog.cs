@@ -7,6 +7,7 @@ using cynosure.Model;
 using Microsoft.Bot.Builder.Scorables;
 using Microsoft.ApplicationInsights;
 using System.Reflection;
+using System.Collections.Generic;
 
 namespace cynosure.Dialogs
 {
@@ -161,7 +162,7 @@ namespace cynosure.Dialogs
             await context.PostAsync(@"Hello, I'm Cynosure. Say 'help' to learn more about what I can do.");
             context.Done(true);
         }
-
+        
         private static async Task AfterDialog(IDialogContext context, IAwaitable<object> result)
         {
             context.Done<object>(null);

@@ -10,9 +10,9 @@ using Microsoft.Bot.Connector;
 namespace cynosure.Dialogs
 {
     [Serializable]
-    public class HelpDialog : IDialog<Standup>
+    public class HelpDialog : BaseDialog
     {
-        internal List<Command> Commands()
+        override internal List<Command> Commands()
         {
             List<Command> commands = new List<Command>();
             commands.Add(new Command("start standup", "Starts a new standup."));
@@ -24,52 +24,11 @@ namespace cynosure.Dialogs
             return commands;
         }
 
-        public async Task StartAsync(IDialogContext context)
+        override public async Task StartAsync(IDialogContext context)
         {
-            string title = "My main resonsibility is to run your standup for you.";
-            string help = "My commands:\n\n\n\n";
-            foreach (var command in Commands())
-            {
-                help += "'" + command.Trigger + "' : " + command.Description + "\n\n";
-            }
-
-            var reply = context.MakeMessage();
-            reply.Speak = title + "\n\n" + help;
-            reply.InputHint = InputHints.AcceptingInput;
-
-
-            List<CardAction> buttons = new List<CardAction>();
-            foreach (var command in Commands())
-            {
-                buttons.Add(new CardAction(ActionTypes.ImBack, command.Trigger, value: command.Trigger.ToLower()));
-            }
-
-            reply.Attachments = new List<Attachment>
-            {
-                new HeroCard(title)
-                {
-                    Buttons = buttons
-                }.ToAttachment()
-            };
-
-            await context.PostAsync(reply);
-
+            DisplayHelpCard(context);
             context.Done<object>(null);
         }
     }
 
-    internal class Command
-    {
-        private string v1;
-        private string v2;
-
-        public Command(string trigger, string description)
-        {
-            this.Trigger = trigger;
-            this.Description = description;
-        }
-
-        public string Trigger { get; set; }
-        public string Description { get; set; }
-    }
 }
