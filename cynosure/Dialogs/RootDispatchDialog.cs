@@ -66,7 +66,34 @@ namespace cynosure.Dialogs
         {
             var telemetry = new TelemetryClient();
             telemetry.TrackEvent("Start Standup");
-            context.Call<Standup>(new StandupDialog(), standupUpdatedAsync);
+            context.Call<Standup>(new DoneItemsDialog(), standupUpdatedAsync);
+        }
+
+        [RegexPattern("edit done|done")]
+        [ScorableGroup(1)]
+        public void EditDone(IDialogContext context, IActivity activity)
+        {
+            var telemetry = new TelemetryClient();
+            telemetry.TrackEvent("Edit Done");
+            context.Call<Standup>(new DoneItemsDialog(), standupUpdatedAsync);
+        }
+
+        [RegexPattern("edit committed|committed|edit commitments|commitments")]
+        [ScorableGroup(1)]
+        public void EditCommitments(IDialogContext context, IActivity activity)
+        {
+            var telemetry = new TelemetryClient();
+            telemetry.TrackEvent("Edit Commitments");
+            context.Call<Standup>(new CommittedItemsDialog(), standupUpdatedAsync);
+        }
+
+        [RegexPattern("edit issues|issues|edit needs|needs|edit blockers|blockers")]
+        [ScorableGroup(1)]
+        public void EditIssues(IDialogContext context, IActivity activity)
+        {
+            var telemetry = new TelemetryClient();
+            telemetry.TrackEvent("Edit Issues");
+            context.Call<Standup>(new IssueItemsDialog(), standupUpdatedAsync);
         }
 
         [RegexPattern("standup summary|summary|standup report|report")]
