@@ -10,7 +10,7 @@ using System.Web;
 namespace cynosure.Dialogs
 {
     [Serializable]
-    public abstract class BaseDialog: IDialog<Standup>
+    public abstract class AbstractBaseDialog: IDialog<Standup>
     {
         protected Standup _standup;
 

@@ -9,7 +9,7 @@ using cynosure.Model;
 namespace cynosure.Dialogs
 {
     [Serializable]
-    public class DoneItemsDialog : BaseDialog
+    public class DoneItemsDialog : AbstractItemDialog
     {
         public override Task StartAsync(IDialogContext context)
         {
@@ -22,11 +22,11 @@ namespace cynosure.Dialogs
             {
                 _standup.Done = new List<String>();
             }
-            EnterDone(context);
+            EnterItem(context);
             return Task.CompletedTask;
         }
 
-        private void EnterDone(IDialogContext context)
+        override protected void EnterItem(IDialogContext context)
         {
             var text = Standup.ItemsSummary("Items already recorded as done:", _standup.Done);
             string promptText;
@@ -44,10 +44,10 @@ namespace cynosure.Dialogs
                 );
 
             var prompt = new PromptDialog.PromptString(promptOptions);
-            context.Call<string>(prompt, DoneItemEnteredAsync);
+            context.Call<string>(prompt, ItemEnteredAsync);
         }
 
-        private async Task DoneItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
+        override protected async Task ItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
             if (IsHelp(input))
@@ -58,7 +58,7 @@ namespace cynosure.Dialogs
                     speak: "What do you want to do?"
                     );
                 var prompt = new PromptDialog.PromptString(promptOptions);
-                context.Call<string>(prompt, DoneItemEnteredAsync);
+                context.Call<string>(prompt, ItemEnteredAsync);
             }
             else if (IsLastInput(input))
             {
@@ -90,7 +90,7 @@ namespace cynosure.Dialogs
                 }
 
                 context.UserData.SetValue(@"profile", _standup);
-                EnterDone(context);
+                EnterItem(context);
             }
         }
 

@@ -10,7 +10,7 @@ using Microsoft.Bot.Connector;
 namespace cynosure.Dialogs
 {
     [Serializable]
-    public class HelpDialog : BaseDialog
+    public class HelpDialog : AbstractBaseDialog
     {
         override internal List<Command> Commands()
         {

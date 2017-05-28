@@ -9,7 +9,7 @@ using cynosure.Model;
 namespace cynosure.Dialogs
 {
     [Serializable]
-    public class CommittedItemsDialog : BaseDialog
+    public class CommittedItemsDialog : AbstractItemDialog
     {
         public override Task StartAsync(IDialogContext context)
         {
@@ -17,11 +17,11 @@ namespace cynosure.Dialogs
             {
                 _standup = new Standup();
             }
-            EnterCommitted(context);
+            EnterItem(context);
             return Task.CompletedTask;
         }
 
-        private void EnterCommitted(IDialogContext context)
+        override protected void EnterItem(IDialogContext context)
         {
             var text = Standup.ItemsSummary("Items already recorded as focus items for today:", _standup.Committed);
             string promptText;
@@ -39,10 +39,10 @@ namespace cynosure.Dialogs
                 );
 
             var prompt = new PromptDialog.PromptString(promptOptions);
-            context.Call<string>(prompt, CommittedItemEnteredAsync);
+            context.Call<string>(prompt, ItemEnteredAsync);
         }
 
-        private async Task CommittedItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
+        override protected async Task ItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
             if (IsHelp(input))
@@ -53,7 +53,7 @@ namespace cynosure.Dialogs
                     speak: "What do you want to do?"
                     );
                 var prompt = new PromptDialog.PromptString(promptOptions);
-                context.Call<string>(prompt, CommittedItemEnteredAsync);
+                context.Call<string>(prompt, ItemEnteredAsync);
             }
             else if (IsLastInput(input))
             {
@@ -64,7 +64,7 @@ namespace cynosure.Dialogs
             {
                 _standup.Committed.Add(input);
                 context.UserData.SetValue(@"profile", _standup);
-                EnterCommitted(context);
+                EnterItem(context);
             }
         }
 

@@ -9,7 +9,7 @@ using cynosure.Model;
 namespace cynosure.Dialogs
 {
     [Serializable]
-    public class IssueItemsDialog : BaseDialog
+    public class IssueItemsDialog : AbstractItemDialog
     {
         public override Task StartAsync(IDialogContext context)
         {
@@ -17,11 +17,11 @@ namespace cynosure.Dialogs
             {
                 _standup = new Standup();
             }
-            EnterIssues(context);
+            EnterItem(context);
             return Task.CompletedTask;
         }
         
-        private void EnterIssues(IDialogContext context)
+        override protected void EnterItem(IDialogContext context)
         {
             var text = Standup.ItemsSummary("Items already recorded as blocking:", _standup.Issues);
             string promptText;
@@ -39,10 +39,10 @@ namespace cynosure.Dialogs
                 );
 
             var prompt = new PromptDialog.PromptString(promptOptions);
-            context.Call<string>(prompt, IssuesItemEnteredAsync);
+            context.Call<string>(prompt, ItemEnteredAsync);
         }
 
-        private async Task IssuesItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
+        override protected async Task ItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
             string input = await result;
             if (IsHelp(input))
@@ -53,7 +53,7 @@ namespace cynosure.Dialogs
                     speak: "What do you want to do?"
                     );
                 var prompt = new PromptDialog.PromptString(promptOptions);
-                context.Call<string>(prompt, IssuesItemEnteredAsync);
+                context.Call<string>(prompt, ItemEnteredAsync);
             }
             else if (IsLastInput(input))
             {
@@ -64,7 +64,7 @@ namespace cynosure.Dialogs
             {
                 _standup.Issues.Add(input);
                 context.UserData.SetValue(@"profile", _standup);
-                EnterIssues(context);
+                EnterItem(context);
             }
         }
 
