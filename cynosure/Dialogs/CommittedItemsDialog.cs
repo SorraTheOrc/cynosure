@@ -11,21 +11,20 @@ namespace cynosure.Dialogs
     [Serializable]
     public class CommittedItemsDialog : AbstractItemDialog
     {
-        public override Task StartAsync(IDialogContext context)
+        protected override string GetHeader(IDialogContext context)
         {
-            if (!context.UserData.TryGetValue(@"profile", out _standup))
-            {
-                _standup = new Standup();
-            }
-            EnterItem(context);
-            return Task.CompletedTask;
+            return Standup.ItemsSummary("Items already recorded as focus items for today:", GetCurrentStandup(context).Committed);
         }
 
-        override protected void EnterItem(IDialogContext context)
+        protected override List<string> GetItems(IDialogContext context)
         {
-            var text = Standup.ItemsSummary("Items already recorded as focus items for today:", _standup.Committed);
+            return GetCurrentStandup(context).Committed;
+        }
+
+        protected override string GetPromptText(IDialogContext context)
+        {
             string promptText;
-            if (_standup.Committed.Any())
+            if (GetItems(context).Any())
             {
                 promptText = "What else are you focusing on today?";
             }
@@ -33,17 +32,12 @@ namespace cynosure.Dialogs
             {
                 promptText = "What will you focus on today?";
             }
-            var promptOptions = new PromptOptions<string>(
-                text + "\n\n\n\n" + promptText,
-                speak: promptText
-                );
-
-            var prompt = new PromptDialog.PromptString(promptOptions);
-            context.Call<string>(prompt, ItemEnteredAsync);
+            return promptText;
         }
 
-        override protected async Task ItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
+        override protected async Task TextEnteredAsync(IDialogContext context, IAwaitable<string> result)
         {
+            Standup standup = GetCurrentStandup(context);
             string input = await result;
             if (IsHelp(input))
             {
@@ -53,18 +47,18 @@ namespace cynosure.Dialogs
                     speak: "What do you want to do?"
                     );
                 var prompt = new PromptDialog.PromptString(promptOptions);
-                context.Call<string>(prompt, ItemEnteredAsync);
+                context.Call<string>(prompt, TextEnteredAsync);
             }
             else if (IsLastInput(input))
             {
                 await SummaryReportAsync(context);
-                context.Done(_standup);
+                context.Done(standup);
             }
             else
             {
-                _standup.Committed.Add(input);
-                context.UserData.SetValue(@"profile", _standup);
-                EnterItem(context);
+                standup.Committed.Add(input);
+                context.UserData.SetValue(@"profile", standup);
+                RequestInput(context);
             }
         }
 

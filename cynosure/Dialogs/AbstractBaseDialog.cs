@@ -12,8 +12,6 @@ namespace cynosure.Dialogs
     [Serializable]
     public abstract class AbstractBaseDialog: IDialog<Standup>
     {
-        protected Standup _standup;
-
         protected static bool IsLastInput(string input)
         {
             string[] lastWords = new string[] { "nothing", "nothing more", "nothing else", "none", "no", "no more", "finished", "done" };
@@ -49,18 +47,6 @@ namespace cynosure.Dialogs
             }
             return help;
 
-        }
-
-        protected async Task SummaryReportAsync(IDialogContext context)
-        {
-            string summary = _standup.Summary();
-
-            var text = "Your current standup report is:\n\n\n\n" + summary;
-            var promptOptions = new PromptOptions<string>(
-                text,
-                speak: text
-                );
-            await context.PostAsync(text);
         }
 
         async protected Task DisplayHelpCard(IDialogContext context)
