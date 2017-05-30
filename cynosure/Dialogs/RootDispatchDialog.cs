@@ -88,7 +88,7 @@ namespace cynosure.Dialogs
             context.Call<Standup>(new CommittedItemsDialog(), standupUpdatedAsync);
         }
 
-        [RegexPattern("edit issues|issues|edit needs|needs|edit blockers|blockers")]
+        [RegexPattern("edit issues|issues|edit barriers|barriers|edit needs|needs|edit blockers|blockers")]
         [ScorableGroup(1)]
         public void EditIssues(IDialogContext context, IActivity activity)
         {

@@ -64,7 +64,7 @@ namespace cynosure.Dialogs
 
         async protected Task DisplayHelpCard(IDialogContext context)
         {
-            string title = "My main resonsibility is to run your standup for you.";
+            string title = "My main responsibility is to run your standup for you.";
             string help = "My commands:\n\n\n\n";
             foreach (var command in Commands())
             {
