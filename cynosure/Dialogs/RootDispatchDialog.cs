@@ -70,13 +70,26 @@ namespace cynosure.Dialogs
             context.Call<Standup>(new DoneItemsDialog(), standupUpdatedAsync);
         }
 
-        [RegexPattern("edit done|done")]
+        [RegexPattern("edit done|done|edit completed|completed|edite complete|complete")]
         [ScorableGroup(1)]
         public void EditDone(IDialogContext context, IActivity activity)
         {
             var telemetry = new TelemetryClient();
             telemetry.TrackEvent("Edit Done");
             context.Call<Standup>(new DoneItemsDialog(), standupUpdatedAsync);
+        }
+
+        [RegexPattern("^Add (?<item>.*) to done items.")]
+        [ScorableGroup(1)]
+        public void AddDone(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
+        {
+            Standup standup;
+            if (!context.UserData.TryGetValue(@"profile", out standup))
+            {
+                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
+            }
+            standup.Done.Add(itemText);
+            context.PostAsync(standup.Summary());
         }
 
         [RegexPattern("edit committed|committed|edit commitments|commitments")]
@@ -112,7 +125,7 @@ namespace cynosure.Dialogs
                 await context.PostAsync("There is no standup data right now. You can 'start standup' if you like");
             }
             context.Done(true);
-         }
+        }
 
         [RegexPattern("help")]
         [ScorableGroup(2)]

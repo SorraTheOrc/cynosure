@@ -109,6 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="default.htm" />
+    <Content Include="Dialogs\HtmlPage1.html" />
     <Content Include="Global.asax" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
