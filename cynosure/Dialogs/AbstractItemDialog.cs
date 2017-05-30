@@ -29,7 +29,7 @@ namespace cynosure.Dialogs
         /**
          * Process informaiton that has been entered.
          */
-        abstract protected Task TextEnteredAsync(IDialogContext context, IAwaitable<string> result);
+        abstract protected Task ProcessDialogInput(IDialogContext context, string input);
 
 
         public override Task StartAsync(IDialogContext context)
@@ -59,6 +59,32 @@ namespace cynosure.Dialogs
 
             var prompt = new PromptDialog.PromptString(promptOptions);
             context.Call<string>(prompt, TextEnteredAsync);
+        }
+
+        protected async Task TextEnteredAsync(IDialogContext context, IAwaitable<string> result)
+        {
+            string input = await result;
+            Standup standup = GetCurrentStandup(context);
+
+            if (IsHelp(input))
+            {
+                await DisplayHelpCard(context);
+                var promptOptions = new PromptOptions<string>(
+                    "What do you want to do?",
+                    speak: "What do you want to do?"
+                    );
+                var prompt = new PromptDialog.PromptString(promptOptions);
+                context.Call<string>(prompt, TextEnteredAsync);
+            }
+            else if (IsLastInput(input))
+            {
+                await SummaryReportAsync(context);
+                context.Done(standup);
+            }
+            else
+            {
+                await ProcessDialogInput(context, input);
+            }
         }
 
         protected async Task SummaryReportAsync(IDialogContext context)

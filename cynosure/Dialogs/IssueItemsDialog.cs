@@ -35,32 +35,12 @@ namespace cynosure.Dialogs
             return promptText;
         }
 
-        override protected async Task TextEnteredAsync(IDialogContext context, IAwaitable<string> result)
+        override protected async Task ProcessDialogInput(IDialogContext context, string input)
         {
-            string input = await result;
             Standup standup = GetCurrentStandup(context);
-
-            if (IsHelp(input))
-            {
-                await DisplayHelpCard(context);
-                var promptOptions = new PromptOptions<string>(
-                    "What do you want to do?",
-                    speak: "What do you want to do?"
-                    );
-                var prompt = new PromptDialog.PromptString(promptOptions);
-                context.Call<string>(prompt, TextEnteredAsync);
-            }
-            else if (IsLastInput(input))
-            {
-                await SummaryReportAsync(context);
-                context.Done(standup);
-            }
-            else
-            {
-                standup.Issues.Add(input);
-                context.UserData.SetValue(@"profile", standup);
-                RequestInput(context);
-            }
+            standup.Issues.Add(input);
+            context.UserData.SetValue(@"profile", standup);
+            RequestInput(context);
         }
 
         internal override List<Command> Commands()

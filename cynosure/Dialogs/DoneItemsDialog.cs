@@ -49,53 +49,33 @@ namespace cynosure.Dialogs
             return GetCurrentStandup(context).Done;
         }
 
-        override protected async Task TextEnteredAsync(IDialogContext context, IAwaitable<string> result)
+        override protected async Task ProcessDialogInput(IDialogContext context, string input)
         {
-            string input = await result;
             Standup standup = GetCurrentStandup(context);
-
-            if (IsHelp(input))
-            {
-                await DisplayHelpCard(context);
-                var promptOptions = new PromptOptions<string>(
-                    "What do you want to do?",
-                    speak: "What do you want to do?"
-                    );
-                var prompt = new PromptDialog.PromptString(promptOptions);
-                context.Call<string>(prompt, TextEnteredAsync);
+            int intVal;
+            if (int.TryParse(input, out intVal))
+            {   
+                input = standup.Committed.ElementAt(intVal - 1);
             }
-            else if (IsLastInput(input))
+
+            if (isAll(input))
             {
-                await SummaryReportAsync(context);
-                context.Done(standup);
+                var committed = standup.Committed;
+                for (int i = standup.Committed.Count -1; i >= 0; i--)
+                {
+                    var item = standup.Committed.ElementAt(i);
+                    standup.Done.Add(item);
+                    standup.Committed.Remove(item);
+                }
             }
             else
             {
-                int intVal;
-                if (int.TryParse(input, out intVal))
-                {   
-                    input = standup.Committed.ElementAt(intVal - 1);
-                }
-
-                if (isAll(input))
-                {
-                    var committed = standup.Committed;
-                    for (int i = standup.Committed.Count -1; i >= 0; i--)
-                    {
-                        var item = standup.Committed.ElementAt(i);
-                        standup.Done.Add(item);
-                        standup.Committed.Remove(item);
-                    }
-                }
-                else
-                {
-                    standup.Done.Add(input);
-                    standup.Committed.Remove(input);
-                }
-
-                context.UserData.SetValue(@"profile", standup);
-                RequestInput(context);
+                standup.Done.Add(input);
+                standup.Committed.Remove(input);
             }
+
+            context.UserData.SetValue(@"profile", standup);
+            RequestInput(context);
         }
 
         internal override List<Command> Commands()
