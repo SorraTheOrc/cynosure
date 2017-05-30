@@ -101,6 +101,19 @@ namespace cynosure.Dialogs
             context.Call<Standup>(new CommittedItemsDialog(), standupUpdatedAsync);
         }
 
+        [RegexPattern("^Add (?<item>.*) to committed items.")]
+        [ScorableGroup(1)]
+        public void AddCommitted(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
+        {
+            Standup standup;
+            if (!context.UserData.TryGetValue(@"profile", out standup))
+            {
+                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
+            }
+            standup.Committed.Add(itemText);
+            context.PostAsync(standup.Summary());
+        }
+
         [RegexPattern("edit issues|issues|edit barriers|barriers|edit needs|needs|edit blockers|blockers")]
         [ScorableGroup(1)]
         public void EditIssues(IDialogContext context, IActivity activity)
@@ -108,6 +121,19 @@ namespace cynosure.Dialogs
             var telemetry = new TelemetryClient();
             telemetry.TrackEvent("Edit Issues");
             context.Call<Standup>(new IssueItemsDialog(), standupUpdatedAsync);
+        }
+
+        [RegexPattern("^Add (?<item>.*) to barriers.")]
+        [ScorableGroup(1)]
+        public void AddBarrier(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
+        {
+            Standup standup;
+            if (!context.UserData.TryGetValue(@"profile", out standup))
+            {
+                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
+            }
+            standup.Issues.Add(itemText);
+            context.PostAsync(standup.Summary());
         }
 
         [RegexPattern("standup summary|summary|standup report|report")]
