@@ -9,23 +9,22 @@ using cynosure.Model;
 namespace cynosure.Dialogs
 {
     [Serializable]
-    public class IssueItemsDialog : BaseItemsDialog
+    public class IssueItemsDialog : AbstractItemDialog
     {
-        public override Task StartAsync(IDialogContext context)
+        protected override string GetHeader(IDialogContext context)
         {
-            if (!context.UserData.TryGetValue(@"profile", out _standup))
-            {
-                _standup = new Standup();
-            }
-            EnterIssues(context);
-            return Task.CompletedTask;
+            return Standup.ItemsSummary("Items already recorded as blocking:", GetItems(context));
         }
-        
-        private void EnterIssues(IDialogContext context)
+
+        protected override List<string> GetItems(IDialogContext context)
         {
-            var text = Standup.ItemsSummary("Items already recorded as blocking:", _standup.Issues);
+            return GetCurrentStandup(context).Issues;
+        }
+
+        protected override string GetPromptText(IDialogContext context)
+        {
             string promptText;
-            if (_standup.Issues.Any())
+            if (GetCurrentStandup(context).Issues.Any())
             {
                 promptText = "What other blockers you are facing right now?";
             }
@@ -33,29 +32,27 @@ namespace cynosure.Dialogs
             {
                 promptText = "What blockers are you facing at the moment?";
             }
-            var promptOptions = new PromptOptions<string>(
-                text + "\n\n\n\n" + promptText,
-                speak: promptText
-                );
-
-            var prompt = new PromptDialog.PromptString(promptOptions);
-            context.Call<string>(prompt, IssuesItemEnteredAsync);
+            return promptText;
         }
 
-        private async Task IssuesItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
+        override protected async Task ProcessDialogInput(IDialogContext context, string input)
         {
-            string input = await result;
-            if (IsLastInput(input))
-            {
-                await SummaryReportAsync(context);
-                context.Done(_standup);
-            }
-            else
-            {
-                _standup.Issues.Add(input);
-                context.UserData.SetValue(@"profile", _standup);
-                EnterIssues(context);
-            }
+            Standup standup = GetCurrentStandup(context);
+            standup.Issues.Add(input);
+            context.UserData.SetValue(@"profile", standup);
+            RequestInput(context);
+        }
+
+        internal override List<Command> Commands()
+        {
+            List<Command> commands = new List<Command>();
+            commands.Add(new Command("Finished", "Finish editing issues"));
+            return commands;
+        }
+        
+        internal override string GetCurrentDialogType()
+        {
+            return "blocking";
         }
     }
 }

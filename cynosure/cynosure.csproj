@@ -109,6 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="default.htm" />
+    <Content Include="Dialogs\HtmlPage1.html" />
     <Content Include="Global.asax" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
@@ -117,7 +118,8 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
-    <Compile Include="Dialogs\BaseItemsDialog.cs" />
+    <Compile Include="Dialogs\AbstractBaseDialog.cs" />
+    <Compile Include="Dialogs\AbstractItemDialog.cs" />
     <Compile Include="Dialogs\IssueItemsDialog.cs" />
     <Compile Include="Dialogs\RootDispatchDialog.cs" />
     <Compile Include="Dialogs\HelpDialog.cs" />

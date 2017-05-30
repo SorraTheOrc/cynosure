@@ -9,96 +9,87 @@ using cynosure.Model;
 namespace cynosure.Dialogs
 {
     [Serializable]
-    public class DoneItemsDialog : BaseItemsDialog
+    public class DoneItemsDialog : AbstractItemDialog
     {
         public override Task StartAsync(IDialogContext context)
         {
-            if (!context.UserData.TryGetValue(@"profile", out _standup))
-            {
-                _standup = new Standup();
-            }
+            var _standup = GetCurrentStandup(context);
             string trigger = context.Activity.AsMessageActivity().Text;
             if (trigger.Trim().ToLower().StartsWith("start"))
             {
                 _standup.Done = new List<String>();
             }
-            EnterDone(context);
+            RequestInput(context);
             return Task.CompletedTask;
         }
-        
-        private async Task DoneCompleteCommittedAsync(IDialogContext context, IAwaitable<string> result)
+
+        override protected string GetHeader(IDialogContext context)
         {
-            string input = await result;
-            if (IsLastInput(input))
-            {
-                await SummaryReportAsync(context);
-                EnterDone(context);
-            }
-            else
-            {
-                _standup.Done.Add(input);
-                _standup.Committed.Remove(input);
-                context.UserData.SetValue(@"profile", _standup);
-                EnterDone(context);
-            }
+            return Standup.ItemsSummary("Items already recorded as done:", GetCurrentStandup(context).Done);
         }
 
-        private void EnterDone(IDialogContext context)
+        override protected string GetPromptText(IDialogContext context)
         {
-            var text = Standup.ItemsSummary("Items already recorded as done:", _standup.Done);
+            Standup standup = GetCurrentStandup(context);
             string promptText;
-            if (_standup.Committed.Any())
+            if (standup.Committed.Any())
             {
-                text += "\n\n\n\n" + Standup.ItemsSummary("Currently committed items are:", _standup.Committed);
-                promptText = "Enter a new \"Done\" item or enter an existing committed item to promote it to done (you can use the numbers for this too). When you have finished updating your \"Done\" items say \"Finished\"";
-            } else
+                promptText = Standup.ItemsSummary("Currently committed items are:", standup.Committed);
+                promptText += "Enter a new \"Done\" item or enter an existing committed item to promote it to done (you can use the numbers for this too). When you have finished updating your \"Done\" items say \"Finished\"";
+            }
+            else
             {
                 promptText = "Enter a new \"Done\" item. When you have finished updating your \"Done\" items say \"Finished\"";
             }
-            var promptOptions = new PromptOptions<string>(
-                text + "\n\n\n\n" + promptText,
-                speak: promptText
-                );
-
-            var prompt = new PromptDialog.PromptString(promptOptions);
-            context.Call<string>(prompt, DoneItemEnteredAsync);
+            return promptText;
         }
 
-        private async Task DoneItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
+        override protected List<String> GetItems(IDialogContext context)
         {
-            string input = await result;
-            if (IsLastInput(input))
+            return GetCurrentStandup(context).Done;
+        }
+
+        override protected async Task ProcessDialogInput(IDialogContext context, string input)
+        {
+            Standup standup = GetCurrentStandup(context);
+            int intVal;
+            if (int.TryParse(input, out intVal))
+            {   
+                input = standup.Committed.ElementAt(intVal - 1);
+            }
+
+            if (isAll(input))
             {
-                await SummaryReportAsync(context);
-                context.Done(_standup);
+                var committed = standup.Committed;
+                for (int i = standup.Committed.Count -1; i >= 0; i--)
+                {
+                    var item = standup.Committed.ElementAt(i);
+                    standup.Done.Add(item);
+                    standup.Committed.Remove(item);
+                }
             }
             else
             {
-                int intVal;
-                if (int.TryParse(input, out intVal))
-                {   
-                    input = _standup.Committed.ElementAt(intVal - 1);
-                }
-
-                if (isAll(input))
-                {
-                    var committed = _standup.Committed;
-                    for (int i = _standup.Committed.Count -1; i >= 0; i--)
-                    {
-                        var item = _standup.Committed.ElementAt(i);
-                        _standup.Done.Add(item);
-                        _standup.Committed.Remove(item);
-                    }
-                }
-                else
-                {
-                    _standup.Done.Add(input);
-                    _standup.Committed.Remove(input);
-                }
-
-                context.UserData.SetValue(@"profile", _standup);
-                EnterDone(context);
+                standup.Done.Add(input);
+                standup.Committed.Remove(input);
             }
+
+            context.UserData.SetValue(@"profile", standup);
+            RequestInput(context);
+        }
+
+        internal override List<Command> Commands()
+        {
+            List<Command> commands = new List<Command>();
+            commands.Add(new Command("Finished", "Finish editing the done items"));
+            return commands;
+        }
+
+        internal override string GetCurrentDialogType()
+        {
+            return "completed";
         }
     }
+
+
 }

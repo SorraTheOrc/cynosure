@@ -7,6 +7,7 @@ using cynosure.Model;
 using Microsoft.Bot.Builder.Scorables;
 using Microsoft.ApplicationInsights;
 using System.Reflection;
+using System.Collections.Generic;
 
 namespace cynosure.Dialogs
 {
@@ -69,13 +70,30 @@ namespace cynosure.Dialogs
             context.Call<Standup>(new DoneItemsDialog(), standupUpdatedAsync);
         }
 
-        [RegexPattern("edit done|done")]
+        [RegexPattern("edit done|done|edit completed|completed|edite complete|complete")]
         [ScorableGroup(1)]
         public void EditDone(IDialogContext context, IActivity activity)
         {
             var telemetry = new TelemetryClient();
             telemetry.TrackEvent("Edit Done");
             context.Call<Standup>(new DoneItemsDialog(), standupUpdatedAsync);
+        }
+
+        [RegexPattern("^Add (?<item>.*) to done items.")]
+        [ScorableGroup(1)]
+        public void AddDone(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
+        {
+            Standup standup;
+            if (!context.UserData.TryGetValue(@"profile", out standup))
+            {
+                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
+            }
+            standup.Done.Add(itemText);
+            context.UserData.SetValue(@"profile", standup);
+
+            string prompt = "Added \"" + itemText + "\" to done items.";
+            prompt += "\n\n\n\n" + standup.Summary();
+            context.PostAsync(prompt);
         }
 
         [RegexPattern("edit committed|committed|edit commitments|commitments")]
@@ -87,13 +105,47 @@ namespace cynosure.Dialogs
             context.Call<Standup>(new CommittedItemsDialog(), standupUpdatedAsync);
         }
 
-        [RegexPattern("edit issues|issues|edit needs|needs|edit blockers|blockers")]
+        [RegexPattern("^Add (?<item>.*) to committed items.")]
+        [RegexPattern("^Add item for today saying (?<item>.*)")]
+        [ScorableGroup(1)]
+        public void AddCommitted(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
+        {
+            Standup standup;
+            if (!context.UserData.TryGetValue(@"profile", out standup))
+            {
+                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
+            }
+            standup.Committed.Add(itemText);
+            context.UserData.SetValue(@"profile", standup);
+
+            string prompt = "Added \"" + itemText + "\" to comitted items.";
+            prompt += "\n\n\n\n" + standup.Summary();
+        }
+
+        [RegexPattern("edit issues|issues|edit barriers|barriers|edit needs|needs|edit blockers|blockers")]
         [ScorableGroup(1)]
         public void EditIssues(IDialogContext context, IActivity activity)
         {
             var telemetry = new TelemetryClient();
             telemetry.TrackEvent("Edit Issues");
             context.Call<Standup>(new IssueItemsDialog(), standupUpdatedAsync);
+        }
+
+        [RegexPattern("^Add (?<item>.*) to barriers.")]
+        [RegexPattern("^Add a need for (?<item>.*).")]
+        [ScorableGroup(1)]
+        public void AddBarrier(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
+        {
+            Standup standup;
+            if (!context.UserData.TryGetValue(@"profile", out standup))
+            {
+                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
+            }
+            standup.Issues.Add(itemText);
+            context.UserData.SetValue(@"profile", standup);
+
+            string prompt = "Added \"" + itemText + "\" to blocking items.";
+            prompt += "\n\n\n\n" + standup.Summary();
         }
 
         [RegexPattern("standup summary|summary|standup report|report")]
@@ -111,7 +163,7 @@ namespace cynosure.Dialogs
                 await context.PostAsync("There is no standup data right now. You can 'start standup' if you like");
             }
             context.Done(true);
-         }
+        }
 
         [RegexPattern("help")]
         [ScorableGroup(2)]
@@ -161,10 +213,11 @@ namespace cynosure.Dialogs
             await context.PostAsync(@"Hello, I'm Cynosure. Say 'help' to learn more about what I can do.");
             context.Done(true);
         }
-
+        
         private static async Task AfterDialog(IDialogContext context, IAwaitable<object> result)
         {
             context.Done<object>(null);
         }
+        
     }
 }

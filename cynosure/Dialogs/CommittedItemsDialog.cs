@@ -9,23 +9,22 @@ using cynosure.Model;
 namespace cynosure.Dialogs
 {
     [Serializable]
-    public class CommittedItemsDialog : BaseItemsDialog
+    public class CommittedItemsDialog : AbstractItemDialog
     {
-        public override Task StartAsync(IDialogContext context)
+        protected override string GetHeader(IDialogContext context)
         {
-            if (!context.UserData.TryGetValue(@"profile", out _standup))
-            {
-                _standup = new Standup();
-            }
-            EnterCommitted(context);
-            return Task.CompletedTask;
+            return Standup.ItemsSummary("Items already recorded as focus items for today:", GetCurrentStandup(context).Committed);
         }
 
-        private void EnterCommitted(IDialogContext context)
+        protected override List<string> GetItems(IDialogContext context)
         {
-            var text = Standup.ItemsSummary("Items already recorded as focus items for today:", _standup.Committed);
+            return GetCurrentStandup(context).Committed;
+        }
+
+        protected override string GetPromptText(IDialogContext context)
+        {
             string promptText;
-            if (_standup.Committed.Any())
+            if (GetItems(context).Any())
             {
                 promptText = "What else are you focusing on today?";
             }
@@ -33,29 +32,27 @@ namespace cynosure.Dialogs
             {
                 promptText = "What will you focus on today?";
             }
-            var promptOptions = new PromptOptions<string>(
-                text + "\n\n\n\n" + promptText,
-                speak: promptText
-                );
-
-            var prompt = new PromptDialog.PromptString(promptOptions);
-            context.Call<string>(prompt, CommittedItemEnteredAsync);
+            return promptText;
         }
 
-        private async Task CommittedItemEnteredAsync(IDialogContext context, IAwaitable<string> result)
+        override protected async Task ProcessDialogInput(IDialogContext context, string input)
         {
-            string input = await result;
-            if (IsLastInput(input))
-            {
-                await SummaryReportAsync(context);
-                context.Done(_standup);
-            }
-            else
-            {
-                _standup.Committed.Add(input);
-                context.UserData.SetValue(@"profile", _standup);
-                EnterCommitted(context);
-            }
+            Standup standup = GetCurrentStandup(context);
+            standup.Committed.Add(input);
+            context.UserData.SetValue(@"profile", standup);
+            RequestInput(context);
+        }
+
+        internal override List<Command> Commands()
+        {
+            List<Command> commands = new List<Command>();
+            commands.Add(new Command("Finished", "Finish editing the committed items"));
+            return commands;
+        }
+
+        internal override string GetCurrentDialogType()
+        {
+            return "committed";
         }
     }
 }
