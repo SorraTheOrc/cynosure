@@ -76,6 +76,11 @@ namespace cynosure.Dialogs
                 var prompt = new PromptDialog.PromptString(promptOptions);
                 context.Call<string>(prompt, TextEnteredAsync);
             }
+            else if (IsStatus(input))
+            {
+                await ReportStatusAsync(context);
+                RequestInput(context);
+            }
             else if (IsLastInput(input))
             {
                 await SummaryReportAsync(context);
@@ -85,6 +90,12 @@ namespace cynosure.Dialogs
             {
                 await ProcessDialogInput(context, input);
             }
+        }
+
+        protected async Task ReportStatusAsync(IDialogContext context)
+        {
+            string header = "We are currently collecting data for \"" + GetCurrentDialogType() + "\" items.";
+            await context.PostAsync(header);
         }
 
         protected async Task SummaryReportAsync(IDialogContext context)

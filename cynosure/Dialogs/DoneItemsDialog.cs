@@ -25,7 +25,7 @@ namespace cynosure.Dialogs
 
         override protected string GetHeader(IDialogContext context)
         {
-            return Standup.ItemsSummary("Items already recorded as done:", GetCurrentStandup(context).Committed);
+            return Standup.ItemsSummary("Items already recorded as done:", GetCurrentStandup(context).Done);
         }
 
         override protected string GetPromptText(IDialogContext context)
@@ -83,6 +83,11 @@ namespace cynosure.Dialogs
             List<Command> commands = new List<Command>();
             commands.Add(new Command("Finished", "Finish editing the done items"));
             return commands;
+        }
+
+        internal override string GetCurrentDialogType()
+        {
+            return "completed";
         }
     }
 

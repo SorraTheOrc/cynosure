@@ -29,6 +29,10 @@ namespace cynosure.Dialogs
             DisplayHelpCard(context);
             context.Done<object>(null);
         }
+        
+        internal override string GetCurrentDialogType()
+        {
+            return "help";
+        }
     }
-
 }

@@ -49,5 +49,10 @@ namespace cynosure.Dialogs
             commands.Add(new Command("Finished", "Finish editing the committed items"));
             return commands;
         }
+
+        internal override string GetCurrentDialogType()
+        {
+            return "committed";
+        }
     }
 }

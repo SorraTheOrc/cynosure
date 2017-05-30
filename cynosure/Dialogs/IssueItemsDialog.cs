@@ -49,5 +49,10 @@ namespace cynosure.Dialogs
             commands.Add(new Command("Finished", "Finish editing issues"));
             return commands;
         }
+        
+        internal override string GetCurrentDialogType()
+        {
+            return "blocking";
+        }
     }
 }

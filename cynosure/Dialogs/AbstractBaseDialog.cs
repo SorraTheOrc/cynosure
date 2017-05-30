@@ -49,6 +49,19 @@ namespace cynosure.Dialogs
 
         }
 
+        protected static bool IsStatus(string input)
+        {
+            string[] allWords = new string[] { "status", "current status", "where are we at?", "where are we up to?" };
+
+            bool isStatus = false;
+            foreach (string word in allWords)
+            {
+                isStatus = isStatus || (input.ToLower() == word);
+            }
+            return isStatus;
+
+        }
+
         async protected Task DisplayHelpCard(IDialogContext context)
         {
             string title = "My main resonsibility is to run your standup for you.";
@@ -83,6 +96,11 @@ namespace cynosure.Dialogs
         public abstract Task StartAsync(IDialogContext context);
 
         internal abstract List<Command> Commands();
+
+        /**
+         * Get the name of the item type this dialog works with.
+         */
+        internal abstract string GetCurrentDialogType();
         
         internal class Command
         {
