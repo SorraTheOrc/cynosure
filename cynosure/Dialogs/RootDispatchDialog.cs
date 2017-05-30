@@ -89,7 +89,11 @@ namespace cynosure.Dialogs
                 context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
             }
             standup.Done.Add(itemText);
-            context.PostAsync(standup.Summary());
+            context.UserData.SetValue(@"profile", standup);
+
+            string prompt = "Added \"" + itemText + "\" to done items.";
+            prompt += "\n\n\n\n" + standup.Summary();
+            context.PostAsync(prompt);
         }
 
         [RegexPattern("edit committed|committed|edit commitments|commitments")]
@@ -102,6 +106,7 @@ namespace cynosure.Dialogs
         }
 
         [RegexPattern("^Add (?<item>.*) to committed items.")]
+        [RegexPattern("^Add item for today saying (?<item>.*)")]
         [ScorableGroup(1)]
         public void AddCommitted(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
         {
@@ -111,7 +116,10 @@ namespace cynosure.Dialogs
                 context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
             }
             standup.Committed.Add(itemText);
-            context.PostAsync(standup.Summary());
+            context.UserData.SetValue(@"profile", standup);
+
+            string prompt = "Added \"" + itemText + "\" to comitted items.";
+            prompt += "\n\n\n\n" + standup.Summary();
         }
 
         [RegexPattern("edit issues|issues|edit barriers|barriers|edit needs|needs|edit blockers|blockers")]
@@ -124,6 +132,7 @@ namespace cynosure.Dialogs
         }
 
         [RegexPattern("^Add (?<item>.*) to barriers.")]
+        [RegexPattern("^Add a need for (?<item>.*).")]
         [ScorableGroup(1)]
         public void AddBarrier(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
         {
@@ -133,7 +142,10 @@ namespace cynosure.Dialogs
                 context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
             }
             standup.Issues.Add(itemText);
-            context.PostAsync(standup.Summary());
+            context.UserData.SetValue(@"profile", standup);
+
+            string prompt = "Added \"" + itemText + "\" to blocking items.";
+            prompt += "\n\n\n\n" + standup.Summary();
         }
 
         [RegexPattern("standup summary|summary|standup report|report")]
@@ -206,5 +218,6 @@ namespace cynosure.Dialogs
         {
             context.Done<object>(null);
         }
+        
     }
 }
