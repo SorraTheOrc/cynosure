@@ -8,6 +8,7 @@ using Microsoft.Bot.Builder.Scorables;
 using Microsoft.ApplicationInsights;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace cynosure.Dialogs
 {
@@ -99,8 +100,6 @@ namespace cynosure.Dialogs
 
         [RegexPattern("^Add (?<item>.*) to (?<list>.*) items.")]
         [RegexPattern("^Add (?<item>.*) to (?<list>.*).")]
-        [RegexPattern("^Promote (?<item>.*) to (?<list>.*) items.")]
-        [RegexPattern("^Promote (?<item>.*) to (?<list>.*).")]
         [ScorableGroup(1)]
         public void Add(IDialogContext context, IActivity activity, [Entity("item")] string itemText, [Entity("list")] string list)
         {
@@ -110,7 +109,7 @@ namespace cynosure.Dialogs
                 context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
             }
 
-            if (list.ToLower().Equals("done"))
+            if (IsDoneList(list))
             {
                 if (itemText.ToLower().Equals("all"))
                 {
@@ -126,7 +125,7 @@ namespace cynosure.Dialogs
                     standup.Committed.Remove(itemText);
                 }
             }
-            else if (list.ToLower().Equals("committed"))
+            else if (IsCommittedList(list))
             {
                 if (itemText.ToLower().Equals("all"))
                 {
@@ -142,7 +141,7 @@ namespace cynosure.Dialogs
                     standup.Backlog.Remove(itemText);
                 }
             }
-            else if (list.ToLower().Equals("barriers"))
+            else if (IsIssuesList(list))
             {
                 standup.Issues.Add(itemText);
             }
@@ -152,6 +151,56 @@ namespace cynosure.Dialogs
             }
             context.UserData.SetValue(@"profile", standup);
 
+            context.PostAsync(standup.Summary());
+        }
+
+        [RegexPattern("^Promote (?<item>.*) from (?<list>.*) items.")]
+        [RegexPattern("^Promote (?<item>.*) from (?<list>.*).")]
+        [ScorableGroup(1)]
+        public void Promote(IDialogContext context, IActivity activity, [Entity("item")] string itemText, [Entity("list")] string list)
+        {
+            Standup standup;
+            if (!context.UserData.TryGetValue(@"profile", out standup))
+            {
+                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
+            }
+
+            if (IsCommittedList(list))
+            {
+                if (itemText.ToLower().Equals("all"))
+                {
+                    for (int i = standup.Committed.Count - 1; i >= 0; i--)
+                    {
+                        var item = standup.Committed.ElementAt(i);
+                        standup.Done.Add(item);
+                        standup.Committed.Remove(item);
+                    }
+                }
+                else
+                {
+                    standup.Done.Add(itemText);
+                    standup.Committed.Remove(itemText);
+                }
+            }
+            else if (IsBacklogList(list))
+            {
+                if (itemText.ToLower().Equals("all"))
+                {
+                    for (int i = standup.Backlog.Count - 1; i >= 0; i--)
+                    {
+                        var item = standup.Backlog.ElementAt(i);
+                        standup.Committed.Add(item);
+                        standup.Backlog.Remove(item);
+                    }
+                }
+                else
+                {
+                    standup.Committed.Add(itemText);
+                    standup.Backlog.Remove(itemText);
+                }
+            }
+
+            context.UserData.SetValue(@"profile", standup);
             context.PostAsync(standup.Summary());
         }
 
@@ -165,12 +214,13 @@ namespace cynosure.Dialogs
             {
                 context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
             }
-            if (list.ToLower().Equals("done"))
+            if (IsDoneList(list))
             {
                 if (itemText.ToLower().Equals("all"))
                 {
-                    foreach (var item in standup.Done)
+                    for (int i = standup.Done.Count - 1; i >= 0; i--)
                     {
+                        var item = standup.Done.ElementAt(i);
                         standup.Done.Remove(item);
                         standup.Committed.Add(item);
                     }
@@ -181,12 +231,13 @@ namespace cynosure.Dialogs
                     standup.Committed.Add(itemText);
                 }
             }
-            else if (list.ToLower().Equals("committed"))
+            else if (IsCommittedList(list))
             {
                 if (itemText.ToLower().Equals("all"))
                 {
-                    foreach (var item in standup.Done)
+                    for (int i = standup.Committed.Count - 1; i >= 0; i--)
                     {
+                        var item = standup.Committed.ElementAt(i);
                         standup.Committed.Remove(item);
                         standup.Backlog.Add(item);
                     }
@@ -197,7 +248,7 @@ namespace cynosure.Dialogs
                     standup.Backlog.Add(itemText);
                 }
             }
-            else if (list.ToLower().Equals("barriers"))
+            else if (IsIssuesList(list))
             {
                 if (itemText.ToLower().Equals("all"))
                 {
@@ -208,7 +259,7 @@ namespace cynosure.Dialogs
                     standup.Issues.Remove(itemText);
                 }
             }
-            else if (list.ToLower().Equals("backlog"))
+            else if (IsBacklogList(list))
             {
                 if (itemText.ToLower().Equals("all"))
                 {
@@ -233,7 +284,7 @@ namespace cynosure.Dialogs
             {
                 context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
             }
-            if (list.ToLower().Equals("done"))
+            if (IsDoneList(list))
             {
                 if (itemText.ToLower().Equals("all"))
                 {
@@ -244,7 +295,7 @@ namespace cynosure.Dialogs
                     standup.Done.Remove(itemText);
                 }
             }
-            else if (list.ToLower().Equals("committed"))
+            else if (IsCommittedList(list))
             {
                 if (itemText.ToLower().Equals("all"))
                 {
@@ -255,7 +306,7 @@ namespace cynosure.Dialogs
                     standup.Committed.Remove(itemText);
                 }
             }
-            else if (list.ToLower().Equals("barriers"))
+            else if (IsIssuesList(list))
             {
                 if (itemText.ToLower().Equals("all"))
                 {
@@ -266,7 +317,7 @@ namespace cynosure.Dialogs
                     standup.Issues.Remove(itemText);
                 }
             }
-            else if (list.ToLower().Equals("backlog"))
+            else if (IsBacklogList(list))
             {
                 if (itemText.ToLower().Equals("all"))
                 {
@@ -349,7 +400,51 @@ namespace cynosure.Dialogs
             await context.PostAsync(@"Hello, I'm Cynosure. Say 'help' to learn more about what I can do.");
             context.Done(true);
         }
-        
+
+        private static bool IsDoneList(string list)
+        {
+            List<string> synonyms = new List<string>() { "done", "complete", "completed" };
+            bool isList = false;
+            foreach (string synonym in synonyms)
+            {
+                isList = isList || list.ToLower().Equals(synonym);
+            }
+            return isList;
+        }
+
+        private static bool IsCommittedList(string list)
+        {
+            List<string> synonyms = new List<string>() { "committed", "today", "focus" };
+            bool isCommitted = false;
+            foreach (string synonym in synonyms)
+            {
+                isCommitted = isCommitted || list.ToLower().Equals(synonym);
+            }
+            return isCommitted;
+        }
+
+        private static bool IsBacklogList(string list)
+        {
+            List<string> synonyms = new List<string>() { "backlog", "todo", "fixme", "future" };
+            bool isBacklog = false;
+            foreach (string synonym in synonyms)
+            {
+                isBacklog = isBacklog || list.ToLower().Equals(synonym);
+            }
+            return isBacklog;
+        }
+
+        private static bool IsIssuesList(string list)
+        {
+            List<string> synonyms = new List<string>() { "issue", "issues", "needs", "barriers" };
+            bool isIssues = false;
+            foreach (string synonym in synonyms)
+            {
+                isIssues = isIssues || list.ToLower().Equals(synonym);
+            }
+            return isIssues;
+        }
+
         private static async Task AfterDialog(IDialogContext context, IAwaitable<object> result)
         {
             context.Done<object>(null);
