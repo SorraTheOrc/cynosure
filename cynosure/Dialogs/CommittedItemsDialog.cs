@@ -47,6 +47,8 @@ namespace cynosure.Dialogs
         {
             List<Command> commands = new List<Command>();
             commands.Add(new Command("Finished", "Finish editing the committed items"));
+            commands.Add(new Command("Add <item> to committed items.", "Add an item to the committed items list.", Command.CommandType.Sentence));
+            commands.Add(new Command("Remove <item> from committed items.", "Remove an item to the committed items list.", Command.CommandType.Sentence));
             return commands;
         }
 
