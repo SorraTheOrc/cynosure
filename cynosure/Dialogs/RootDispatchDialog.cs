@@ -154,9 +154,45 @@ namespace cynosure.Dialogs
                 context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
             }
             standup.Committed.Remove(itemText);
+            standup.Backlog.Add(itemText);
             context.UserData.SetValue(@"profile", standup);
 
-            string prompt = "Removed \"" + itemText + "\" from commited items.";
+            string prompt = "Moved \"" + itemText + "\" from commited to backlog items.";
+            prompt += "\n\n\n\n" + standup.Summary();
+            context.PostAsync(prompt);
+        }
+
+        [RegexPattern("^Add (?<item>.*) to backlog items.")]
+        [RegexPattern("^Add (?<item>.*) to backlog.")]
+        [ScorableGroup(1)]
+        public void AddBacklog(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
+        {
+            Standup standup;
+            if (!context.UserData.TryGetValue(@"profile", out standup))
+            {
+                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
+            }
+            standup.Backlog.Add(itemText);
+            context.UserData.SetValue(@"profile", standup);
+
+            string prompt = "Added \"" + itemText + "\" to backlog items.";
+            prompt += "\n\n\n\n" + standup.Summary();
+            context.PostAsync(prompt);
+        }
+
+        [RegexPattern("^Remove (?<item>.*) from backlog.")]
+        [ScorableGroup(1)]
+        public void RemoveBacklog(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
+        {
+            Standup standup;
+            if (!context.UserData.TryGetValue(@"profile", out standup))
+            {
+                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
+            }
+            standup.Backlog.Remove(itemText);
+            context.UserData.SetValue(@"profile", standup);
+
+            string prompt = "Removed \"" + itemText + "\" from backlog items.";
             prompt += "\n\n\n\n" + standup.Summary();
             context.PostAsync(prompt);
         }
