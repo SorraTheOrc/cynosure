@@ -197,6 +197,38 @@ namespace cynosure.Dialogs
             context.PostAsync(prompt);
         }
 
+        [RegexPattern("^Delete (?<item>.*) from (?<list>.*).")]
+        [ScorableGroup(1)]
+        public void Delete(IDialogContext context, IActivity activity, [Entity("item")] string itemText, [Entity("list")] string list)
+        {
+            Standup standup;
+            if (!context.UserData.TryGetValue(@"profile", out standup))
+            {
+                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
+            }
+            if (list.ToLower().Equals("done"))
+            {
+                standup.Done.Remove(itemText);
+            }
+            else if (list.ToLower().Equals("committed"))
+            {
+                standup.Committed.Remove(itemText);
+            }
+            else if (list.ToLower().Equals("barriers"))
+            {
+                standup.Issues.Remove(itemText);
+            }
+            else if (list.ToLower().Equals("backlog"))
+            {
+                standup.Backlog.Remove(itemText);
+            }
+            context.UserData.SetValue(@"profile", standup);
+
+            string prompt = "Removed \"" + itemText + "\" from " + list + " items.";
+            prompt += "\n\n\n\n" + standup.Summary();
+            context.PostAsync(prompt);
+        }
+
         [RegexPattern("edit issues|issues|edit barriers|barriers|edit needs|needs|edit blockers|blockers")]
         [ScorableGroup(1)]
         public void EditIssues(IDialogContext context, IActivity activity)
