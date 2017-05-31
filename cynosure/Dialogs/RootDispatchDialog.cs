@@ -111,6 +111,11 @@ namespace cynosure.Dialogs
 
             if (IsDoneList(list))
             {
+                if (int.TryParse(itemText, out int intVal))
+                {
+                    itemText = standup.Done.ElementAt(intVal - 1);
+                }
+
                 if (itemText.ToLower().Equals("all"))
                 {
                     foreach (var item in standup.Committed)
@@ -127,6 +132,11 @@ namespace cynosure.Dialogs
             }
             else if (IsCommittedList(list))
             {
+                if (int.TryParse(itemText, out int intVal))
+                {
+                    itemText = standup.Committed.ElementAt(intVal - 1);
+                }
+
                 if (itemText.ToLower().Equals("all"))
                 {
                     foreach (var item in standup.Backlog)
@@ -143,10 +153,20 @@ namespace cynosure.Dialogs
             }
             else if (IsIssuesList(list))
             {
+                if (int.TryParse(itemText, out int intVal))
+                {
+                    itemText = standup.Issues.ElementAt(intVal - 1);
+                }
+
                 standup.Issues.Add(itemText);
             }
             else if (list.ToLower().Equals("backlog"))
             {
+                if (int.TryParse(itemText, out int intVal))
+                {
+                    itemText = standup.Backlog.ElementAt(intVal - 1);
+                }
+
                 standup.Backlog.Add(itemText);
             }
             context.UserData.SetValue(@"profile", standup);
@@ -167,6 +187,11 @@ namespace cynosure.Dialogs
 
             if (IsCommittedList(list))
             {
+                if (int.TryParse(itemText, out int intVal))
+                {
+                    itemText = standup.Committed.ElementAt(intVal - 1);
+                }
+
                 if (itemText.ToLower().Equals("all"))
                 {
                     for (int i = standup.Committed.Count - 1; i >= 0; i--)
@@ -184,6 +209,11 @@ namespace cynosure.Dialogs
             }
             else if (IsBacklogList(list))
             {
+                if (int.TryParse(itemText, out int intVal))
+                {
+                    itemText = standup.Backlog.ElementAt(intVal - 1);
+                }
+
                 if (itemText.ToLower().Equals("all"))
                 {
                     for (int i = standup.Backlog.Count - 1; i >= 0; i--)
@@ -216,6 +246,11 @@ namespace cynosure.Dialogs
             }
             if (IsDoneList(list))
             {
+                if (int.TryParse(itemText, out int intVal))
+                {
+                    itemText = standup.Done.ElementAt(intVal - 1);
+                }
+
                 if (itemText.ToLower().Equals("all"))
                 {
                     for (int i = standup.Done.Count - 1; i >= 0; i--)
@@ -233,6 +268,11 @@ namespace cynosure.Dialogs
             }
             else if (IsCommittedList(list))
             {
+                if (int.TryParse(itemText, out int intVal))
+                {
+                    itemText = standup.Committed.ElementAt(intVal - 1);
+                }
+
                 if (itemText.ToLower().Equals("all"))
                 {
                     for (int i = standup.Committed.Count - 1; i >= 0; i--)
@@ -250,6 +290,11 @@ namespace cynosure.Dialogs
             }
             else if (IsIssuesList(list))
             {
+                if (int.TryParse(itemText, out int intVal))
+                {
+                    itemText = standup.Issues.ElementAt(intVal - 1);
+                }
+
                 if (itemText.ToLower().Equals("all"))
                 {
                     standup.Issues = new List<string>();
@@ -261,6 +306,11 @@ namespace cynosure.Dialogs
             }
             else if (IsBacklogList(list))
             {
+                if (int.TryParse(itemText, out int intVal))
+                {
+                    itemText = standup.Backlog.ElementAt(intVal - 1);
+                }
+
                 if (itemText.ToLower().Equals("all"))
                 {
                     standup.Backlog = new List<string>();
@@ -286,6 +336,11 @@ namespace cynosure.Dialogs
             }
             if (IsDoneList(list))
             {
+                if (int.TryParse(itemText, out int intVal))
+                {
+                    itemText = standup.Done.ElementAt(intVal - 1);
+                }
+
                 if (itemText.ToLower().Equals("all"))
                 {
                     standup.Done = new List<string>();
@@ -297,6 +352,11 @@ namespace cynosure.Dialogs
             }
             else if (IsCommittedList(list))
             {
+                if (int.TryParse(itemText, out int intVal))
+                {
+                    itemText = standup.Committed.ElementAt(intVal - 1);
+                }
+
                 if (itemText.ToLower().Equals("all"))
                 {
                     standup.Committed = new List<string>();
@@ -308,6 +368,11 @@ namespace cynosure.Dialogs
             }
             else if (IsIssuesList(list))
             {
+                if (int.TryParse(itemText, out int intVal))
+                {
+                    itemText = standup.Issues.ElementAt(intVal - 1);
+                }
+
                 if (itemText.ToLower().Equals("all"))
                 {
                     standup.Issues = new List<string>();
@@ -319,6 +384,11 @@ namespace cynosure.Dialogs
             }
             else if (IsBacklogList(list))
             {
+                if (int.TryParse(itemText, out int intVal))
+                {
+                    itemText = standup.Backlog.ElementAt(intVal - 1);
+                }
+
                 if (itemText.ToLower().Equals("all"))
                 {
                     standup.Backlog = new List<string>();
