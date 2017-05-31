@@ -120,6 +120,7 @@ namespace cynosure.Dialogs
 
             string prompt = "Added \"" + itemText + "\" to comitted items.";
             prompt += "\n\n\n\n" + standup.Summary();
+            context.PostAsync(prompt);
         }
 
         [RegexPattern("edit issues|issues|edit barriers|barriers|edit needs|needs|edit blockers|blockers")]
@@ -146,6 +147,26 @@ namespace cynosure.Dialogs
 
             string prompt = "Added \"" + itemText + "\" to blocking items.";
             prompt += "\n\n\n\n" + standup.Summary();
+            context.PostAsync(prompt);
+        }
+
+        [RegexPattern("^Remove (?<item>.*) from barriers.")]
+        [RegexPattern("^Remove need for (?<item>.*).")]
+        [ScorableGroup(1)]
+        public void RemoveBarrier(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
+        {
+            Standup standup;
+            if (!context.UserData.TryGetValue(@"profile", out standup))
+            {
+                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
+            }
+            standup.Issues.Remove(itemText);
+            standup.Done.Add("Removed need: " + itemText);
+            context.UserData.SetValue(@"profile", standup);
+
+            string prompt = "Removed \"" + itemText + "\" from blocking items.";
+            prompt += "\n\n\n\n" + standup.Summary();
+            context.PostAsync(prompt);
         }
 
         [RegexPattern("standup summary|summary|standup report|report")]
