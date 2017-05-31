@@ -47,6 +47,8 @@ namespace cynosure.Dialogs
         {
             List<Command> commands = new List<Command>();
             commands.Add(new Command("Finished", "Finish editing issues"));
+            commands.Add(new Command("Add <item> to needs.", "Add an item to the needs list.", Command.CommandType.Sentence));
+            commands.Add(new Command("Remove <item> from needs.", "Add an item to the needs list.", Command.CommandType.Sentence));
             return commands;
         }
         

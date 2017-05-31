@@ -80,6 +80,7 @@ namespace cynosure.Dialogs
         }
 
         [RegexPattern("^Add (?<item>.*) to done items.")]
+        [RegexPattern("^Add (?<item>.*) to done.")]
         [ScorableGroup(1)]
         public void AddDone(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
         {
@@ -106,6 +107,7 @@ namespace cynosure.Dialogs
         }
 
         [RegexPattern("^Add (?<item>.*) to committed items.")]
+        [RegexPattern("^Add (?<item>.*) to committed.")]
         [RegexPattern("^Add item for today saying (?<item>.*)")]
         [ScorableGroup(1)]
         public void AddCommitted(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
@@ -133,6 +135,7 @@ namespace cynosure.Dialogs
         }
 
         [RegexPattern("^Add (?<item>.*) to barriers.")]
+        [RegexPattern("^Add (?<item>.*) to needs.")]
         [RegexPattern("^Add a need for (?<item>.*).")]
         [ScorableGroup(1)]
         public void AddBarrier(IDialogContext context, IActivity activity, [Entity("item")] string itemText)

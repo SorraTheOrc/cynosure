@@ -10,7 +10,7 @@ using System.Web;
 namespace cynosure.Dialogs
 {
     [Serializable]
-    public abstract class AbstractBaseDialog: IDialog<Standup>
+    public abstract class AbstractBaseDialog : IDialog<Standup>
     {
         protected static bool IsLastInput(string input)
         {
@@ -72,23 +72,18 @@ namespace cynosure.Dialogs
             }
 
             var reply = context.MakeMessage();
+            reply.Text = title + "\n\n" + help;
             reply.Speak = title + "\n\n" + help;
             reply.InputHint = InputHints.AcceptingInput;
-
-
+            
             List<CardAction> buttons = new List<CardAction>();
             foreach (var command in Commands())
             {
-                buttons.Add(new CardAction(ActionTypes.ImBack, command.Trigger, value: command.Trigger.ToLower()));
-            }
-
-            reply.Attachments = new List<Attachment>
-            {
-                new HeroCard(title)
+                if (command.Type == Command.CommandType.Button)
                 {
-                    Buttons = buttons
-                }.ToAttachment()
-            };
+                    buttons.Add(new CardAction(ActionTypes.ImBack, command.Trigger, value: command.Trigger.ToLower()));
+                }
+            }
 
             await context.PostAsync(reply);
         }
@@ -101,17 +96,32 @@ namespace cynosure.Dialogs
          * Get the name of the item type this dialog works with.
          */
         internal abstract string GetCurrentDialogType();
-        
+
         internal class Command
         {
+            /**
+             * Create a command that requires no additional information 
+             * to be executed. Such commands can be represented as a 
+             * button in the UI.
+             */
             public Command(string trigger, string description)
             {
                 this.Trigger = trigger;
                 this.Description = description;
+                this.Type = CommandType.Button;
+            }
+            
+            public Command(string pattern, string description, CommandType type)
+            {
+                this.Trigger = pattern;
+                this.Description = description;
+                this.Type = type;
             }
 
+        public enum CommandType { Button, Sentence };
             public string Trigger { get; set; }
             public string Description { get; set; }
+            public CommandType? Type { get; set; }
         }
     }
 }

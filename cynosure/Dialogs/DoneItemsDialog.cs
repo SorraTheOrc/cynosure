@@ -82,6 +82,7 @@ namespace cynosure.Dialogs
         {
             List<Command> commands = new List<Command>();
             commands.Add(new Command("Finished", "Finish editing the done items"));
+            commands.Add(new Command("Add <item> to done.", "Add an item to the done items list.", Command.CommandType.Sentence));
             return commands;
         }
 
