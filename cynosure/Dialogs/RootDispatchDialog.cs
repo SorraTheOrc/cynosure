@@ -78,44 +78,7 @@ namespace cynosure.Dialogs
             telemetry.TrackEvent("Edit Done");
             context.Call<Standup>(new DoneItemsDialog(), standupUpdatedAsync);
         }
-
-        [RegexPattern("^Add (?<item>.*) to done items.")]
-        [RegexPattern("^Add (?<item>.*) to done.")]
-        [ScorableGroup(1)]
-        public void AddDone(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
-        {
-            Standup standup;
-            if (!context.UserData.TryGetValue(@"profile", out standup))
-            {
-                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
-            }
-            standup.Done.Add(itemText);
-            context.UserData.SetValue(@"profile", standup);
-
-            string prompt = "Added \"" + itemText + "\" to done items.";
-            prompt += "\n\n\n\n" + standup.Summary();
-            context.PostAsync(prompt);
-        }
-
-        [RegexPattern("^Remove (?<item>.*) from done.")]
-        [RegexPattern("^Remove (?<item>.*) from done items.")]
-        [ScorableGroup(1)]
-        public void RemoveDone(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
-        {
-            Standup standup;
-            if (!context.UserData.TryGetValue(@"profile", out standup))
-            {
-                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
-            }
-            standup.Done.Remove(itemText);
-            standup.Committed.Add(itemText);
-            context.UserData.SetValue(@"profile", standup);
-
-            string prompt = "Moved \"" + itemText + "\" from done to committed items.";
-            prompt += "\n\n\n\n" + standup.Summary();
-            context.PostAsync(prompt);
-        }
-
+        
         [RegexPattern("edit committed|committed|edit commitments|commitments")]
         [ScorableGroup(1)]
         public void EditCommitments(IDialogContext context, IActivity activity)
@@ -125,74 +88,74 @@ namespace cynosure.Dialogs
             context.Call<Standup>(new CommittedItemsDialog(), standupUpdatedAsync);
         }
 
-        [RegexPattern("^Add (?<item>.*) to committed items.")]
-        [RegexPattern("^Add (?<item>.*) to committed.")]
-        [RegexPattern("^Add item for today saying (?<item>.*)")]
+        [RegexPattern("^Add (?<item>.*) to (?<list>.*) items.")]
+        [RegexPattern("^Add (?<item>.*) to (?<list>.*).")]
+        [RegexPattern("^Promote (?<item>.*) to (?<list>.*) items.")]
+        [RegexPattern("^Promote (?<item>.*) to (?<list>.*).")]
         [ScorableGroup(1)]
-        public void AddCommitted(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
+        public void Add(IDialogContext context, IActivity activity, [Entity("item")] string itemText, [Entity("list")] string list)
         {
             Standup standup;
             if (!context.UserData.TryGetValue(@"profile", out standup))
             {
                 context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
             }
-            standup.Committed.Add(itemText);
+            if (list.ToLower().Equals("done"))
+            {
+                standup.Done.Add(itemText);
+                standup.Committed.Remove(itemText);
+            }
+            else if (list.ToLower().Equals("committed"))
+            {
+                standup.Committed.Add(itemText);
+                standup.Backlog.Remove(itemText);
+            }
+            else if (list.ToLower().Equals("barriers"))
+            {
+                standup.Issues.Add(itemText);
+            }
+            else if (list.ToLower().Equals("backlog"))
+            {
+                standup.Backlog.Add(itemText);
+            }
             context.UserData.SetValue(@"profile", standup);
 
-            string prompt = "Added \"" + itemText + "\" to comitted items.";
+            string prompt = "Added \"" + itemText + "\" from " + list + " items.";
             prompt += "\n\n\n\n" + standup.Summary();
             context.PostAsync(prompt);
         }
 
-        [RegexPattern("^Remove (?<item>.*) from committed.")]
+        [RegexPattern("^Remove (?<item>.*) from (?<list>.*).")]
+        [RegexPattern("^Demote (?<item>.*) from (?<list>.*).")]
         [ScorableGroup(1)]
-        public void RemoveCommitted(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
+        public void Demote(IDialogContext context, IActivity activity, [Entity("item")] string itemText, [Entity("list")] string list)
         {
             Standup standup;
             if (!context.UserData.TryGetValue(@"profile", out standup))
             {
                 context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
             }
-            standup.Committed.Remove(itemText);
-            standup.Backlog.Add(itemText);
-            context.UserData.SetValue(@"profile", standup);
-
-            string prompt = "Moved \"" + itemText + "\" from commited to backlog items.";
-            prompt += "\n\n\n\n" + standup.Summary();
-            context.PostAsync(prompt);
-        }
-
-        [RegexPattern("^Add (?<item>.*) to backlog items.")]
-        [RegexPattern("^Add (?<item>.*) to backlog.")]
-        [ScorableGroup(1)]
-        public void AddBacklog(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
-        {
-            Standup standup;
-            if (!context.UserData.TryGetValue(@"profile", out standup))
+            if (list.ToLower().Equals("done"))
             {
-                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
+                standup.Done.Remove(itemText);
+                standup.Committed.Add(itemText);
             }
-            standup.Backlog.Add(itemText);
-            context.UserData.SetValue(@"profile", standup);
-
-            string prompt = "Added \"" + itemText + "\" to backlog items.";
-            prompt += "\n\n\n\n" + standup.Summary();
-            context.PostAsync(prompt);
-        }
-
-        [RegexPattern("^Remove (?<item>.*) from backlog.")]
-        [ScorableGroup(1)]
-        public void RemoveBacklog(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
-        {
-            Standup standup;
-            if (!context.UserData.TryGetValue(@"profile", out standup))
+            else if (list.ToLower().Equals("committed"))
             {
-                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
+                standup.Committed.Remove(itemText);
+                standup.Backlog.Add(itemText);
             }
-            standup.Backlog.Remove(itemText);
+            else if (list.ToLower().Equals("barriers"))
+            {
+                standup.Issues.Remove(itemText);
+            }
+            else if (list.ToLower().Equals("backlog"))
+            {
+                standup.Backlog.Remove(itemText);
+            }
             context.UserData.SetValue(@"profile", standup);
 
-            string prompt = "Removed \"" + itemText + "\" from backlog items.";
+            string prompt = "Demoted \"" + itemText + "\" from " + list + " items.";
             prompt += "\n\n\n\n" + standup.Summary();
             context.PostAsync(prompt);
         }
@@ -237,46 +200,7 @@ namespace cynosure.Dialogs
             telemetry.TrackEvent("Edit Issues");
             context.Call<Standup>(new IssueItemsDialog(), standupUpdatedAsync);
         }
-
-        [RegexPattern("^Add (?<item>.*) to barriers.")]
-        [RegexPattern("^Add (?<item>.*) to needs.")]
-        [RegexPattern("^Add a need for (?<item>.*).")]
-        [ScorableGroup(1)]
-        public void AddBarrier(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
-        {
-            Standup standup;
-            if (!context.UserData.TryGetValue(@"profile", out standup))
-            {
-                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
-            }
-            standup.Issues.Add(itemText);
-            context.UserData.SetValue(@"profile", standup);
-
-            string prompt = "Added \"" + itemText + "\" to blocking items.";
-            prompt += "\n\n\n\n" + standup.Summary();
-            context.PostAsync(prompt);
-        }
-
-        [RegexPattern("^Remove (?<item>.*) from barriers.")]
-        [RegexPattern("^Remove (?<item>.*) from needs.")]
-        [RegexPattern("^Remove need for (?<item>.*).")]
-        [ScorableGroup(1)]
-        public void RemoveBarrier(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
-        {
-            Standup standup;
-            if (!context.UserData.TryGetValue(@"profile", out standup))
-            {
-                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
-            }
-            standup.Issues.Remove(itemText);
-            standup.Done.Add("Removed need: " + itemText);
-            context.UserData.SetValue(@"profile", standup);
-
-            string prompt = "Removed \"" + itemText + "\" from done items and added to committed items.";
-            prompt += "\n\n\n\n" + standup.Summary();
-            context.PostAsync(prompt);
-        }
-
+        
         [RegexPattern("standup summary|summary|standup report|report")]
         [ScorableGroup(1)]
         public async Task StandupSummary(IDialogContext context, IActivity activity)
