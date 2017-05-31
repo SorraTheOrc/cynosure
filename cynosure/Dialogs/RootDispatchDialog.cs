@@ -88,6 +88,15 @@ namespace cynosure.Dialogs
             context.Call<Standup>(new CommittedItemsDialog(), standupUpdatedAsync);
         }
 
+        [RegexPattern("edit issues|issues|edit barriers|barriers|edit needs|needs|edit blockers|blockers")]
+        [ScorableGroup(1)]
+        public void EditIssues(IDialogContext context, IActivity activity)
+        {
+            var telemetry = new TelemetryClient();
+            telemetry.TrackEvent("Edit Issues");
+            context.Call<Standup>(new IssueItemsDialog(), standupUpdatedAsync);
+        }
+
         [RegexPattern("^Add (?<item>.*) to (?<list>.*) items.")]
         [RegexPattern("^Add (?<item>.*) to (?<list>.*).")]
         [RegexPattern("^Promote (?<item>.*) to (?<list>.*) items.")]
@@ -190,15 +199,6 @@ namespace cynosure.Dialogs
             string prompt = "Removed \"" + itemText + "\" from " + list + " items.";
             prompt += "\n\n\n\n" + standup.Summary();
             context.PostAsync(prompt);
-        }
-
-        [RegexPattern("edit issues|issues|edit barriers|barriers|edit needs|needs|edit blockers|blockers")]
-        [ScorableGroup(1)]
-        public void EditIssues(IDialogContext context, IActivity activity)
-        {
-            var telemetry = new TelemetryClient();
-            telemetry.TrackEvent("Edit Issues");
-            context.Call<Standup>(new IssueItemsDialog(), standupUpdatedAsync);
         }
         
         [RegexPattern("standup summary|summary|standup report|report")]
