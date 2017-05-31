@@ -97,6 +97,25 @@ namespace cynosure.Dialogs
             context.PostAsync(prompt);
         }
 
+        [RegexPattern("^Remove (?<item>.*) from done.")]
+        [RegexPattern("^Remove (?<item>.*) from done items.")]
+        [ScorableGroup(1)]
+        public void RemoveDone(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
+        {
+            Standup standup;
+            if (!context.UserData.TryGetValue(@"profile", out standup))
+            {
+                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
+            }
+            standup.Done.Remove(itemText);
+            standup.Committed.Add(itemText);
+            context.UserData.SetValue(@"profile", standup);
+
+            string prompt = "Moved \"" + itemText + "\" from done to committed items.";
+            prompt += "\n\n\n\n" + standup.Summary();
+            context.PostAsync(prompt);
+        }
+
         [RegexPattern("edit committed|committed|edit commitments|commitments")]
         [ScorableGroup(1)]
         public void EditCommitments(IDialogContext context, IActivity activity)
@@ -121,6 +140,23 @@ namespace cynosure.Dialogs
             context.UserData.SetValue(@"profile", standup);
 
             string prompt = "Added \"" + itemText + "\" to comitted items.";
+            prompt += "\n\n\n\n" + standup.Summary();
+            context.PostAsync(prompt);
+        }
+
+        [RegexPattern("^Remove (?<item>.*) from committed.")]
+        [ScorableGroup(1)]
+        public void RemoveCommitted(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
+        {
+            Standup standup;
+            if (!context.UserData.TryGetValue(@"profile", out standup))
+            {
+                context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
+            }
+            standup.Committed.Remove(itemText);
+            context.UserData.SetValue(@"profile", standup);
+
+            string prompt = "Removed \"" + itemText + "\" from commited items.";
             prompt += "\n\n\n\n" + standup.Summary();
             context.PostAsync(prompt);
         }
@@ -154,6 +190,7 @@ namespace cynosure.Dialogs
         }
 
         [RegexPattern("^Remove (?<item>.*) from barriers.")]
+        [RegexPattern("^Remove (?<item>.*) from needs.")]
         [RegexPattern("^Remove need for (?<item>.*).")]
         [ScorableGroup(1)]
         public void RemoveBarrier(IDialogContext context, IActivity activity, [Entity("item")] string itemText)
@@ -167,7 +204,7 @@ namespace cynosure.Dialogs
             standup.Done.Add("Removed need: " + itemText);
             context.UserData.SetValue(@"profile", standup);
 
-            string prompt = "Removed \"" + itemText + "\" from blocking items.";
+            string prompt = "Removed \"" + itemText + "\" from done items and added to committed items.";
             prompt += "\n\n\n\n" + standup.Summary();
             context.PostAsync(prompt);
         }
