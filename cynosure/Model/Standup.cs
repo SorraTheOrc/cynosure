@@ -11,12 +11,14 @@ namespace cynosure.Model
         public List<string> Done { get; set; }
         public List<string> Committed { get; set; }
         public List<string> Issues { get; set; }
+        public List<string> Backlog { get; set; }
 
         public Standup()
         {
             Done = new List<string>();
             Committed = new List<string>();
             Issues = new List<string>();
+            Backlog = new List<string>();
         }
 
         public string Summary()
@@ -24,6 +26,7 @@ namespace cynosure.Model
             string summary = ItemsSummary("DONE", Done);
             summary += ItemsSummary("FOCUSING ON", Committed);
             summary += ItemsSummary("BARRIERS", Issues);
+            summary += ItemsSummary("BACKLOG", Backlog);
             return summary;
         }
 
