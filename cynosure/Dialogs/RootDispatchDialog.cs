@@ -58,8 +58,8 @@ namespace cynosure.Dialogs
             context.PostAsync(standup.Summary());
         }
 
-        [RegexPattern("^Add (?<item>.*) to (?<list>.*) items.")]
-        [RegexPattern("^Add (?<item>.*) to (?<list>.*).")]
+        [RegexPattern("(?i)^add (?<item>.*) to (?<list>.*) items.")]
+        [RegexPattern("(?i)^add (?<item>.*) to (?<list>.*).")]
         [ScorableGroup(1)]
         public void Add(IDialogContext context, IActivity activity, [Entity("item")] string itemText, [Entity("list")] string list)
         {
@@ -134,8 +134,8 @@ namespace cynosure.Dialogs
             context.PostAsync(standup.Summary());
         }
 
-        [RegexPattern("^Promote (?<item>.*) from (?<list>.*) items.")]
-        [RegexPattern("^Promote (?<item>.*) from (?<list>.*).")]
+        [RegexPattern("(?i)^Promote (?<item>.*) from (?<list>.*) items.")]
+        [RegexPattern("(?i)^Promote (?<item>.*) from (?<list>.*).")]
         [ScorableGroup(1)]
         public void Promote(IDialogContext context, IActivity activity, [Entity("item")] string itemText, [Entity("list")] string list)
         {
@@ -194,8 +194,8 @@ namespace cynosure.Dialogs
             context.PostAsync(standup.Summary());
         }
 
-        [RegexPattern("^Remove (?<item>.*) from (?<list>.*).")]
-        [RegexPattern("^Demote (?<item>.*) from (?<list>.*).")]
+        [RegexPattern("(?i)^Remove (?<item>.*) from (?<list>.*).")]
+        [RegexPattern("(?i)^Demote (?<item>.*) from (?<list>.*).")]
         [ScorableGroup(1)]
         public void Demote(IDialogContext context, IActivity activity, [Entity("item")] string itemText, [Entity("list")] string list)
         {
@@ -285,7 +285,7 @@ namespace cynosure.Dialogs
             context.PostAsync(standup.Summary());
         }
 
-        [RegexPattern("^Delete (?<item>.*) from (?<list>.*).")]
+        [RegexPattern("(?i)^Delete (?<item>.*) from (?<list>.*).")]
         [ScorableGroup(1)]
         public void Delete(IDialogContext context, IActivity activity, [Entity("item")] string itemText, [Entity("list")] string list)
         {
