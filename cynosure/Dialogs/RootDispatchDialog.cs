@@ -109,15 +109,38 @@ namespace cynosure.Dialogs
             {
                 context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
             }
+
             if (list.ToLower().Equals("done"))
             {
-                standup.Done.Add(itemText);
-                standup.Committed.Remove(itemText);
+                if (itemText.ToLower().Equals("all"))
+                {
+                    foreach (var item in standup.Committed)
+                    {
+                        standup.Done.Add(item);
+                        standup.Committed.Remove(item);
+                    }
+                }
+                else
+                {
+                    standup.Done.Add(itemText);
+                    standup.Committed.Remove(itemText);
+                }
             }
             else if (list.ToLower().Equals("committed"))
             {
-                standup.Committed.Add(itemText);
-                standup.Backlog.Remove(itemText);
+                if (itemText.ToLower().Equals("all"))
+                {
+                    foreach (var item in standup.Backlog)
+                    {
+                        standup.Committed.Add(item);
+                        standup.Backlog.Remove(item);
+                    }
+                }
+                else
+                {
+                    standup.Committed.Add(itemText);
+                    standup.Backlog.Remove(itemText);
+                }
             }
             else if (list.ToLower().Equals("barriers"))
             {
@@ -129,9 +152,7 @@ namespace cynosure.Dialogs
             }
             context.UserData.SetValue(@"profile", standup);
 
-            string prompt = "Added \"" + itemText + "\" from " + list + " items.";
-            prompt += "\n\n\n\n" + standup.Summary();
-            context.PostAsync(prompt);
+            context.PostAsync(standup.Summary());
         }
 
         [RegexPattern("^Remove (?<item>.*) from (?<list>.*).")]
@@ -146,27 +167,61 @@ namespace cynosure.Dialogs
             }
             if (list.ToLower().Equals("done"))
             {
-                standup.Done.Remove(itemText);
-                standup.Committed.Add(itemText);
+                if (itemText.ToLower().Equals("all"))
+                {
+                    foreach (var item in standup.Done)
+                    {
+                        standup.Done.Remove(item);
+                        standup.Committed.Add(item);
+                    }
+                }
+                else
+                {
+                    standup.Done.Remove(itemText);
+                    standup.Committed.Add(itemText);
+                }
             }
             else if (list.ToLower().Equals("committed"))
             {
-                standup.Committed.Remove(itemText);
-                standup.Backlog.Add(itemText);
+                if (itemText.ToLower().Equals("all"))
+                {
+                    foreach (var item in standup.Done)
+                    {
+                        standup.Committed.Remove(item);
+                        standup.Backlog.Add(item);
+                    }
+                }
+                else
+                {
+                    standup.Committed.Remove(itemText);
+                    standup.Backlog.Add(itemText);
+                }
             }
             else if (list.ToLower().Equals("barriers"))
             {
-                standup.Issues.Remove(itemText);
+                if (itemText.ToLower().Equals("all"))
+                {
+                    standup.Issues = new List<string>();
+                }
+                else
+                {
+                    standup.Issues.Remove(itemText);
+                }
             }
             else if (list.ToLower().Equals("backlog"))
             {
-                standup.Backlog.Remove(itemText);
+                if (itemText.ToLower().Equals("all"))
+                {
+                    standup.Backlog = new List<string>();
+                }
+                else
+                {
+                    standup.Backlog.Remove(itemText);
+                }
             }
-            context.UserData.SetValue(@"profile", standup);
 
-            string prompt = "Demoted \"" + itemText + "\" from " + list + " items.";
-            prompt += "\n\n\n\n" + standup.Summary();
-            context.PostAsync(prompt);
+            context.UserData.SetValue(@"profile", standup);
+            context.PostAsync(standup.Summary());
         }
 
         [RegexPattern("^Delete (?<item>.*) from (?<list>.*).")]
@@ -180,19 +235,47 @@ namespace cynosure.Dialogs
             }
             if (list.ToLower().Equals("done"))
             {
-                standup.Done.Remove(itemText);
+                if (itemText.ToLower().Equals("all"))
+                {
+                    standup.Done = new List<string>();
+                }
+                else
+                {
+                    standup.Done.Remove(itemText);
+                }
             }
             else if (list.ToLower().Equals("committed"))
             {
-                standup.Committed.Remove(itemText);
+                if (itemText.ToLower().Equals("all"))
+                {
+                    standup.Committed = new List<string>();
+                }
+                else
+                {
+                    standup.Committed.Remove(itemText);
+                }
             }
             else if (list.ToLower().Equals("barriers"))
             {
-                standup.Issues.Remove(itemText);
+                if (itemText.ToLower().Equals("all"))
+                {
+                    standup.Issues = new List<string>();
+                }
+                else
+                {
+                    standup.Issues.Remove(itemText);
+                }
             }
             else if (list.ToLower().Equals("backlog"))
             {
-                standup.Backlog.Remove(itemText);
+                if (itemText.ToLower().Equals("all"))
+                {
+                    standup.Backlog = new List<string>();
+                }
+                else
+                {
+                    standup.Backlog.Remove(itemText);
+                }
             }
             context.UserData.SetValue(@"profile", standup);
 
