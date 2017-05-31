@@ -15,9 +15,7 @@ namespace cynosure.Dialogs
     [Serializable]
     public class RootDispatchDialog : DispatchDialog
     {
-
-        Standup _standup;
-
+        
         [MethodBind]
         [ScorableGroup(0)]
         private async Task ActivityHandler(IDialogContext context, IActivity activity)
@@ -49,53 +47,15 @@ namespace cynosure.Dialogs
                 await stateClient.BotState.DeleteStateForUserAsync(activity.ChannelId, activity.From.Id);
             }
         }
-
-        private async Task standupUpdatedAsync(IDialogContext context, IAwaitable<Standup> result)
-        {
-            var standup = await result;
-            context.UserData.SetValue(@"standup", standup);
-        }
-
-        private async Task profileUpdated(IDialogContext context, IAwaitable<UserProfile> result)
-        {
-            var profile = await result;
-            context.UserData.SetValue(@"profile", profile);
-        }
-
+        
         [RegexPattern("start standup|standup|start|stand up")]
         [ScorableGroup(1)]
         public void StartStandup(IDialogContext context, IActivity activity)
         {
             var telemetry = new TelemetryClient();
             telemetry.TrackEvent("Start Standup");
-            context.Call<Standup>(new DoneItemsDialog(), standupUpdatedAsync);
-        }
-
-        [RegexPattern("edit done|done|edit completed|completed|edite complete|complete")]
-        [ScorableGroup(1)]
-        public void EditDone(IDialogContext context, IActivity activity)
-        {
-            var telemetry = new TelemetryClient();
-            telemetry.TrackEvent("Edit Done");
-            context.Call<Standup>(new DoneItemsDialog(), standupUpdatedAsync);
-        }
-        
-        [RegexPattern("edit committed|committed|edit commitments|commitments")]
-        [ScorableGroup(1)]
-        public void EditCommitments(IDialogContext context, IActivity activity)
-        {
-            var telemetry = new TelemetryClient();
-            telemetry.TrackEvent("Edit Commitments");
-            context.Call<Standup>(new CommittedItemsDialog(), standupUpdatedAsync);
-        }
-
-        [RegexPattern("edit issues|issues|edit barriers|barriers|edit needs|needs|edit blockers|blockers")]
-        [ScorableGroup(1)]
-        public void EditIssues(IDialogContext context, IActivity activity)
-        {
-            var telemetry = new TelemetryClient();
-            telemetry.TrackEvent("Edit Issues");
-            context.Call<Standup>(new IssueItemsDialog(), standupUpdatedAsync);
+            var standup = GetCurrentStandup(context);
+            context.PostAsync(standup.Summary());
         }
 
         [RegexPattern("^Add (?<item>.*) to (?<list>.*) items.")]
@@ -104,7 +64,7 @@ namespace cynosure.Dialogs
         public void Add(IDialogContext context, IActivity activity, [Entity("item")] string itemText, [Entity("list")] string list)
         {
             Standup standup;
-            if (!context.UserData.TryGetValue(@"profile", out standup))
+            if (!context.UserData.TryGetValue(@"standup", out standup))
             {
                 context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
             }
@@ -116,7 +76,7 @@ namespace cynosure.Dialogs
                     itemText = standup.Done.ElementAt(intVal - 1);
                 }
 
-                if (itemText.ToLower().Equals("all"))
+                if (isAll(itemText))
                 {
                     foreach (var item in standup.Committed)
                     {
@@ -137,7 +97,7 @@ namespace cynosure.Dialogs
                     itemText = standup.Committed.ElementAt(intVal - 1);
                 }
 
-                if (itemText.ToLower().Equals("all"))
+                if (isAll(itemText))
                 {
                     foreach (var item in standup.Backlog)
                     {
@@ -160,7 +120,7 @@ namespace cynosure.Dialogs
 
                 standup.Issues.Add(itemText);
             }
-            else if (list.ToLower().Equals("backlog"))
+            else if (IsBacklogList(list))
             {
                 if (int.TryParse(itemText, out int intVal))
                 {
@@ -169,7 +129,7 @@ namespace cynosure.Dialogs
 
                 standup.Backlog.Add(itemText);
             }
-            context.UserData.SetValue(@"profile", standup);
+            context.UserData.SetValue(@"standup", standup);
 
             context.PostAsync(standup.Summary());
         }
@@ -180,7 +140,7 @@ namespace cynosure.Dialogs
         public void Promote(IDialogContext context, IActivity activity, [Entity("item")] string itemText, [Entity("list")] string list)
         {
             Standup standup;
-            if (!context.UserData.TryGetValue(@"profile", out standup))
+            if (!context.UserData.TryGetValue(@"standup", out standup))
             {
                 context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
             }
@@ -192,7 +152,7 @@ namespace cynosure.Dialogs
                     itemText = standup.Committed.ElementAt(intVal - 1);
                 }
 
-                if (itemText.ToLower().Equals("all"))
+                if (isAll(itemText))
                 {
                     for (int i = standup.Committed.Count - 1; i >= 0; i--)
                     {
@@ -214,7 +174,7 @@ namespace cynosure.Dialogs
                     itemText = standup.Backlog.ElementAt(intVal - 1);
                 }
 
-                if (itemText.ToLower().Equals("all"))
+                if (isAll(itemText))
                 {
                     for (int i = standup.Backlog.Count - 1; i >= 0; i--)
                     {
@@ -240,7 +200,7 @@ namespace cynosure.Dialogs
         public void Demote(IDialogContext context, IActivity activity, [Entity("item")] string itemText, [Entity("list")] string list)
         {
             Standup standup;
-            if (!context.UserData.TryGetValue(@"profile", out standup))
+            if (!context.UserData.TryGetValue(@"standup", out standup))
             {
                 context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
             }
@@ -251,7 +211,7 @@ namespace cynosure.Dialogs
                     itemText = standup.Done.ElementAt(intVal - 1);
                 }
 
-                if (itemText.ToLower().Equals("all"))
+                if (isAll(itemText))
                 {
                     for (int i = standup.Done.Count - 1; i >= 0; i--)
                     {
@@ -273,7 +233,7 @@ namespace cynosure.Dialogs
                     itemText = standup.Committed.ElementAt(intVal - 1);
                 }
 
-                if (itemText.ToLower().Equals("all"))
+                if (isAll(itemText))
                 {
                     for (int i = standup.Committed.Count - 1; i >= 0; i--)
                     {
@@ -295,7 +255,7 @@ namespace cynosure.Dialogs
                     itemText = standup.Issues.ElementAt(intVal - 1);
                 }
 
-                if (itemText.ToLower().Equals("all"))
+                if (isAll(itemText))
                 {
                     standup.Issues = new List<string>();
                 }
@@ -311,7 +271,7 @@ namespace cynosure.Dialogs
                     itemText = standup.Backlog.ElementAt(intVal - 1);
                 }
 
-                if (itemText.ToLower().Equals("all"))
+                if (isAll(itemText))
                 {
                     standup.Backlog = new List<string>();
                 }
@@ -321,7 +281,7 @@ namespace cynosure.Dialogs
                 }
             }
 
-            context.UserData.SetValue(@"profile", standup);
+            context.UserData.SetValue(@"standup", standup);
             context.PostAsync(standup.Summary());
         }
 
@@ -330,7 +290,7 @@ namespace cynosure.Dialogs
         public void Delete(IDialogContext context, IActivity activity, [Entity("item")] string itemText, [Entity("list")] string list)
         {
             Standup standup;
-            if (!context.UserData.TryGetValue(@"profile", out standup))
+            if (!context.UserData.TryGetValue(@"standup", out standup))
             {
                 context.PostAsync("Not currently in a standup. Use \"start standup\" to get started.");
             }
@@ -341,7 +301,7 @@ namespace cynosure.Dialogs
                     itemText = standup.Done.ElementAt(intVal - 1);
                 }
 
-                if (itemText.ToLower().Equals("all"))
+                if (isAll(itemText))
                 {
                     standup.Done = new List<string>();
                 }
@@ -357,7 +317,7 @@ namespace cynosure.Dialogs
                     itemText = standup.Committed.ElementAt(intVal - 1);
                 }
 
-                if (itemText.ToLower().Equals("all"))
+                if (isAll(itemText))
                 {
                     standup.Committed = new List<string>();
                 }
@@ -373,7 +333,7 @@ namespace cynosure.Dialogs
                     itemText = standup.Issues.ElementAt(intVal - 1);
                 }
 
-                if (itemText.ToLower().Equals("all"))
+                if (isAll(itemText))
                 {
                     standup.Issues = new List<string>();
                 }
@@ -389,7 +349,7 @@ namespace cynosure.Dialogs
                     itemText = standup.Backlog.ElementAt(intVal - 1);
                 }
 
-                if (itemText.ToLower().Equals("all"))
+                if (isAll(itemText))
                 {
                     standup.Backlog = new List<string>();
                 }
@@ -398,7 +358,7 @@ namespace cynosure.Dialogs
                     standup.Backlog.Remove(itemText);
                 }
             }
-            context.UserData.SetValue(@"profile", standup);
+            context.UserData.SetValue(@"standup", standup);
 
             string prompt = "Removed \"" + itemText + "\" from " + list + " items.";
             prompt += "\n\n\n\n" + standup.Summary();
@@ -411,9 +371,10 @@ namespace cynosure.Dialogs
         {
             var telemetry = new TelemetryClient();
             telemetry.TrackEvent("Summarize Standup");
-            if (context.UserData.TryGetValue(@"standup", out _standup))
+            Standup standup;
+            if (context.UserData.TryGetValue(@"standup", out standup))
             {
-                await context.PostAsync(_standup.Summary());
+                await context.PostAsync(standup.Summary());
             }
             else
             {
@@ -471,6 +432,18 @@ namespace cynosure.Dialogs
             context.Done(true);
         }
 
+        private bool isAll(string input)
+        {
+            string[] allWords = new string[] { "all", "everything" };
+
+            bool all = false;
+            foreach (string word in allWords)
+            {
+                all = all || (input.ToLower() == word);
+            }
+            return all;
+        }
+
         private static bool IsDoneList(string list)
         {
             List<string> synonyms = new List<string>() { "done", "complete", "completed" };
@@ -513,6 +486,17 @@ namespace cynosure.Dialogs
                 isIssues = isIssues || list.ToLower().Equals(synonym);
             }
             return isIssues;
+        }
+
+        private Standup GetCurrentStandup(IDialogContext context)
+        {
+            Standup standup;
+            if (!context.UserData.TryGetValue(@"standup", out standup))
+            {
+                standup = new Standup();
+                context.UserData.SetValue<Standup>(@"standup", standup);
+            }
+            return standup;
         }
 
         private static async Task AfterDialog(IDialogContext context, IAwaitable<object> result)
