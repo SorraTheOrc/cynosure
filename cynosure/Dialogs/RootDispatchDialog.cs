@@ -9,10 +9,6 @@ using Microsoft.ApplicationInsights;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
-using AuthBot;
-using AuthBot.Models;
-using AuthBot.Dialogs;
-using System.Threading;
 
 namespace cynosure.Dialogs
 {
@@ -51,28 +47,7 @@ namespace cynosure.Dialogs
                 await stateClient.BotState.DeleteStateForUserAsync(activity.ChannelId, activity.From.Id);
             }
         }
-
-        [RegexPattern("login|logon")]
-        [ScorableGroup(1)]
-        public async Task LoginAsync(IDialogContext context, IActivity activity)
-        {
-            if (string.IsNullOrEmpty(await context.GetAccessToken(AuthSettings.Scopes)))
-            {
-                context.Call<string>(new AzureAuthDialog(AuthSettings.Scopes), ProcessLoginAsync);
-            }
-            else
-            {
-                await context.PostAsync("You are already logged in");
-            }
-        }
-
-        private async Task ProcessLoginAsync(IDialogContext context, IAwaitable<string> result)
-        {
-            var message = await result;
-            await context.PostAsync(message);
-            context.Done<object>(null);
-        }
-
+        
         [RegexPattern("start standup|standup|start|stand up")]
         [ScorableGroup(1)]
         public void StartStandup(IDialogContext context, IActivity activity)
