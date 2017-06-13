@@ -192,7 +192,7 @@ namespace cynosure.Dialogs
                 }
             }
 
-            context.UserData.SetValue(@"profile", standup);
+            context.UserData.SetValue(@"standup", standup);
             context.PostAsync(standup.Summary());
         }
 
